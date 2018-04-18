@@ -1,0 +1,18 @@
+﻿<Window x:Class="WpfAudio2.WindowAlb"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfAudio2"
+        mc:Ignorable="d"
+        Title="WindowAlb" Height="500" Width="350">
+    <Grid>
+        <GroupBox x:Name="groupBoxButtons" Header="" HorizontalAlignment="Left" Height="72" Margin="0,384,0,0" VerticalAlignment="Top" Width="332">
+            <Button x:Name="buttonPlayPause" Content="Play" HorizontalAlignment="Left" Height="49" Margin="208,0,-2,0" VerticalAlignment="Top" Width="114" Click="buttonPlayPause_Click" MouseDoubleClick="buttonPlayPause_MouseDoubleClick"/>
+        </GroupBox>
+        <ListBox x:Name="listBoxSelectedAlbum" HorizontalAlignment="Left" Height="335" Margin="0,44,0,0" VerticalAlignment="Top" Width="332" MouseDoubleClick="listBoxSelectedAlbum_MouseDoubleClick"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Center" Height="34" Margin="45,10,84,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="213" TextAlignment="Center"/>
+        <Button x:Name="buttonAlbumBack" Content="&lt;-" HorizontalAlignment="Left" Height="20" Margin="10,10,0,0" VerticalAlignment="Top" Width="30" Click="buttonAlbumBack_Click" MouseDown="buttonAlbumBack_MouseDown"/>
+
+    </Grid>
+</Window>

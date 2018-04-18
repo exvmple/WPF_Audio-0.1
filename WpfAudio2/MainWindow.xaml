@@ -1,0 +1,65 @@
+﻿<Window x:Class="WpfAudio2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfAudio2"
+        xmlns:my="clr-namespace:System.ComponentModel;assembly=System"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="350" ResizeMode="NoResize">
+    <Window.Resources>
+        <my:BackgroundWorker x:Key="backgroundWorker" DoWork="BackgroundWorker_DoWork" WorkerSupportsCancellation="True" RunWorkerCompleted="BackgroundWorker_RunWorkerCompleted">
+        </my:BackgroundWorker>
+    </Window.Resources>
+    <Grid Margin="0,0,0,3">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <TabControl x:Name="tabControl" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="434" Margin="0,32,0,0" VerticalAlignment="Top" Width="342" SelectionChanged="tabControl_SelectionChanged">
+            <TabItem x:Name="TabSongs" Header="Songs" Width="70">
+                <Grid Background="#FFE5E5E5" Margin="0,0,76,96">
+                    <ListBox x:Name="listBoxSongs" Height="340" VerticalAlignment="Top" Margin="0,0,-82,-30" HorizontalAlignment="Left" Width="342" SelectionChanged="listBoxSongs_SelectionChanged" MouseDoubleClick="listBoxSongs_MouseDoubleClick" MouseRightButtonDown="listBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem x:Name="addToPlaylist" Header="Add to playlist" Click="addToPlaylist_Click">
+                                </MenuItem>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabAlbums" Header="Albums" Width="70">
+                <Grid Background="#FFE5E5E5" Margin="0,0,94,99">
+                    <ListBox x:Name="listBoxAlbums" Height="340" VerticalAlignment="Top" Margin="0,0,-96,-33" HorizontalAlignment="Left" Width="338" MouseDoubleClick="listBoxAlbums_MouseDoubleClick"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabPlaylists" Header="Playlists" Width="70">
+                <Grid Background= "#FFE5E5E5" Margin="0,0,-4,99">
+                    <ListBox x:Name="listBoxPlaylists" HorizontalAlignment="Left" Height="310" VerticalAlignment="Top" Width="342" Margin="0,30,-100,-33" MouseDown="listBoxPlaylists_MouseDown" MouseDoubleClick="listBoxPlaylists_MouseDoubleClick"/>
+                    <Button x:Name="buttonAddPlaylist" Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Height="30" Click="buttonAddPlaylist_Click"/>
+                    <Button x:Name="buttonRemovePlaylist" Content="-" HorizontalAlignment="Left" Margin="76,0,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="buttonRemovePlaylist_Click"/>
+                    <Button x:Name="buttonPlaylistSongAdd" Content="Add songs..." HorizontalAlignment="Left" Margin="161,0,0,0" VerticalAlignment="Top" Width="84" Height="30" Visibility="Hidden"/>
+                    <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,0,0,0" VerticalAlignment="Top" Width="95" Height="30" Visibility="Hidden"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabPlayer" Header="Player" Width="100">
+                <Grid Width="342" Margin="0,0,-6,70">
+                    <Image x:Name="tabPlayerPic" HorizontalAlignment="Left" Height="200" Margin="67,30,0,0" VerticalAlignment="Top" Width="200"/>
+                    <TextBlock x:Name="textBlockSongInfo" HorizontalAlignment="Left" Height="44" Margin="10,235,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="322"/>
+                    <Slider x:Name="sliderPosition" Height="28" Margin="10,305,22,3" Minimum="0" Maximum="100" ValueChanged="sliderPosition_ValueChanged" />
+                    <TextBlock x:Name="textBlockCurrentPos" HorizontalAlignment="Left" Margin="10,284,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+                    <TextBlock x:Name="textBlockDuration" HorizontalAlignment="Left" Margin="279,284,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" RenderTransformOrigin="-0.012,0.062" Width="53"/>
+                </Grid>
+            </TabItem>
+
+
+        </TabControl>
+        <GroupBox x:Name="groupBoxButtons" Grid.ColumnSpan="2" Header="" HorizontalAlignment="Left" Height="72" Margin="0,384,0,0" VerticalAlignment="Top" Width="344">
+            <Button x:Name="buttonPlayPause" Content="Play" HorizontalAlignment="Left" Height="49" Margin="130,0,0,0" VerticalAlignment="Top" Width="62" Click="buttonPlayPause_Click"/>
+        </GroupBox>
+        <Button x:Name="buttonAlbBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="74" Visibility="Hidden" Click="buttonAlbBack_Click"/>
+        <Button x:Name="buttonPlaylistBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="25" Margin="0,2,0,0" VerticalAlignment="Top" Width="57" Visibility="Hidden" Click="buttonPlaylistBack_Click_1"/>
+
+    </Grid>
+</Window>
