@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Resources;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Controls.Primitives;
 
 namespace WpfAudio2
 {
@@ -160,13 +162,12 @@ namespace WpfAudio2
         }
 
     }
+
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        
-
         bool albumsStatus = false;
         bool playlistStatus = false;
   
@@ -175,7 +176,7 @@ namespace WpfAudio2
         ProgramData data = new ProgramData();
         Song currentSong;
         WMPLib.WindowsMediaPlayer player = new WMPLib.WindowsMediaPlayer();
-        private BackgroundWorker backgroundWorker;
+        
     
         public MainWindow()
         {
@@ -184,9 +185,12 @@ namespace WpfAudio2
             fillBoxes();
             listBoxSongs.SelectedIndex = 0;
 
-            backgroundWorker = (BackgroundWorker)this.FindResource("backgroundWorker");
-            backgroundWorker.RunWorkerAsync();
+
+            DoWorkAsyncInfiniteLoop();
+
         }
+
+
 
         void fillBoxes()
         {
@@ -200,9 +204,7 @@ namespace WpfAudio2
             listBoxPlaylists.ItemsSource = data.Playlists;
             listBoxPlaylists.DisplayMemberPath = "Title";
 
-            
         }
-
         
 
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -253,8 +255,7 @@ namespace WpfAudio2
                 TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
                 TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
 
-                sliderPosition.Value = (cur.TotalSeconds / dur.TotalSeconds) * 100;
-                textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
+                
                 textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
             }
             
@@ -465,9 +466,13 @@ namespace WpfAudio2
 
         private void buttonRemovePlaylist_Click(object sender, RoutedEventArgs e)
         {
-            data.Playlists.Remove(data.Playlists[listBoxPlaylists.SelectedIndex]);
+            if(data.Playlists[listBoxPlaylists.SelectedIndex] != null)
+            {
+                data.Playlists.Remove(data.Playlists[listBoxPlaylists.SelectedIndex]);
 
-            listBoxPlaylists.Items.Refresh();
+                listBoxPlaylists.Items.Refresh();
+            }
+            
         }
 
         private void addToPlaylist_Selected(object sender, RoutedEventArgs e)
@@ -484,39 +489,48 @@ namespace WpfAudio2
 
         private void sliderPosition_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            player.controls.currentPosition = sliderPosition.Value / 100 * TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture).TotalSeconds;
-            TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
-            textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
 
         }
 
-        public void update_Slider(Song currentSong, Slider sliderPosition)
+        public void update_Slider(Song currentSong)
         {
             if(currentSong != null)
             {
                 TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
                 TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
                 
-                sliderPosition.Value = (cur.TotalSeconds / dur.TotalSeconds) * 100;
+                sliderPosition.Value= (cur.TotalSeconds / dur.TotalSeconds) * 100;
                 textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
 
             }
             
         }
 
-        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private async Task DoWorkAsyncInfiniteLoop()
         {
-            backgroundWorker.RunWorkerAsync();
+            while (true)
+            {
+                update_Slider(currentSong);
+                
+                await Task.Delay(300);
+            }
         }
 
-        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        public class SliderIgnoreDelta : Slider
         {
-            while(true)
+            protected override void OnThumbDragDelta(DragDeltaEventArgs e)
             {
-                Thread.Sleep(300);
-                update_Slider(currentSong,sliderPosition);
+                // Do nothing
             }
+        }
 
+        private void sliderPosition_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            player.controls.currentPosition = (sliderPosition.Value / 100) * TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture).TotalSeconds;
+            TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
+            textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
         }
     }
+
+   
 }

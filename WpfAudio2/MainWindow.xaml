@@ -7,10 +7,6 @@
         xmlns:my="clr-namespace:System.ComponentModel;assembly=System"
         mc:Ignorable="d"
         Title="MainWindow" Height="500" Width="350" ResizeMode="NoResize">
-    <Window.Resources>
-        <my:BackgroundWorker x:Key="backgroundWorker" DoWork="BackgroundWorker_DoWork" WorkerSupportsCancellation="True" RunWorkerCompleted="BackgroundWorker_RunWorkerCompleted">
-        </my:BackgroundWorker>
-    </Window.Resources>
     <Grid Margin="0,0,0,3">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>
@@ -47,8 +43,8 @@
                 <Grid Width="342" Margin="0,0,-6,70">
                     <Image x:Name="tabPlayerPic" HorizontalAlignment="Left" Height="200" Margin="67,30,0,0" VerticalAlignment="Top" Width="200"/>
                     <TextBlock x:Name="textBlockSongInfo" HorizontalAlignment="Left" Height="44" Margin="10,235,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="322"/>
-                    <Slider x:Name="sliderPosition" Height="28" Margin="10,305,22,3" Minimum="0" Maximum="100" ValueChanged="sliderPosition_ValueChanged" />
-                    <TextBlock x:Name="textBlockCurrentPos" HorizontalAlignment="Left" Margin="10,284,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+                    <Slider x:Name="sliderPosition" Thumb.DragCompleted="sliderPosition_DragCompleted" ValueChanged="sliderPosition_ValueChanged" Height="28" Margin="10,305,22,3" Minimum="0" Maximum="100" />
+                    <TextBlock x:Name="textBlockCurrentPos" HorizontalAlignment="Left" Margin="10,284,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" />
                     <TextBlock x:Name="textBlockDuration" HorizontalAlignment="Left" Margin="279,284,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" RenderTransformOrigin="-0.012,0.062" Width="53"/>
                 </Grid>
             </TabItem>
