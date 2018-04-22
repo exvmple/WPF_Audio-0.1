@@ -172,6 +172,7 @@ namespace WpfAudio2
         bool playlistStatus = false;
   
         int temp = 0;
+        int selectedPlaylist = -1;
         string defdir = @"D:\C#\repos\Tragic City";
         ProgramData data = new ProgramData();
         Song currentSong;
@@ -490,6 +491,8 @@ namespace WpfAudio2
                     listBoxPlaylists.ItemsSource = data.Playlists[temp].Songs;
                     listBoxPlaylists.DisplayMemberPath = "Title";
 
+                    selectedPlaylist = temp;
+
                     playlistStatus = true;
 
                     buttonPlaylistBack.Visibility = Visibility.Visible;
@@ -529,6 +532,8 @@ namespace WpfAudio2
 
             buttonPlaylistSongAdd.Visibility = Visibility.Hidden;
             buttonPlaylistSongRemove.Visibility = Visibility.Hidden;
+
+            selectedPlaylist = -1;
         }
 
         private void buttonRemovePlaylist_Click(object sender, RoutedEventArgs e)
@@ -605,7 +610,21 @@ namespace WpfAudio2
 
         private void addToPlaylistfromAlb_Click(object sender, RoutedEventArgs e)
         {
+            
+        }
 
+        private void buttonPlaylistSongRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedPlaylist > -1)
+            {
+                
+                Song mine = (Song)listBoxPlaylists.SelectedItem;
+
+
+                data.Playlists[selectedPlaylist].Songs.Remove(mine);
+
+                listBoxPlaylists.Items.Refresh();
+            }
         }
     }
 

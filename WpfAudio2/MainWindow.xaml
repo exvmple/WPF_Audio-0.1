@@ -42,7 +42,7 @@
                     <Button x:Name="buttonAddPlaylist" Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Height="30" Click="buttonAddPlaylist_Click"/>
                     <Button x:Name="buttonRemovePlaylist" Content="-" HorizontalAlignment="Left" Margin="76,0,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="buttonRemovePlaylist_Click"/>
                     <Button x:Name="buttonPlaylistSongAdd" Content="Add songs..." HorizontalAlignment="Left" Margin="161,0,0,0" VerticalAlignment="Top" Width="84" Height="30" Visibility="Hidden"/>
-                    <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,0,0,0" VerticalAlignment="Top" Width="95" Height="30" Visibility="Hidden"/>
+                    <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,0,0,0" VerticalAlignment="Top" Width="95" Height="30" Visibility="Hidden" Click="buttonPlaylistSongRemove_Click"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabPlayer" Header="Player" Width="100">
