@@ -246,19 +246,86 @@ namespace WpfAudio2
                 {
                     buttonAlbBack.Visibility = Visibility.Visible;
                 }
+
+                addToPlaylistfromAlb.Items.Clear();
+                foreach (Playlist play in data.Playlists)
+                {
+
+                    MenuItem mineAlb = new MenuItem();
+                    mineAlb.Header = play.Title;
+
+                    if (addToPlaylistfromAlb.Items.OfType<MenuItem>().Where(i => i.Header == mineAlb.Header).FirstOrDefault() == null)
+                    {
+                        mineAlb.Click += mineAlb_Click;
+                        addToPlaylistfromAlb.Items.Add(mineAlb);
+                    }
+                }
+
+                if (addToPlaylist.Items.Count == 0)
+                {
+                    MenuItem mineAlb = new MenuItem();
+                    mineAlb.Header = "brak";
+                    mineAlb.IsEnabled = false;
+                    addToPlaylistfromAlb.Items.Add(mineAlb);
+                }
+
             }
             if (TabPlayer.IsSelected)
             {
-                tabPlayerPic.Source = new BitmapImage(new System.Uri(currentSong.Album.Cover.Filename));
-                textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
+                if(currentSong!=null)
+                {
+                    tabPlayerPic.Source = new BitmapImage(new System.Uri(currentSong.Album.Cover.Filename));
+                    textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
 
-                TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
-                TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
+                    TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
+                    TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
 
+
+                    textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
+                }
+                else
+                {
+                    tabPlayerPic.Source = new BitmapImage(new Uri(Path.Combine(Environment.CurrentDirectory,@"temp\no.png")));
+                    textBlockSongInfo.Text = "none";
+                    textBlockDuration.Text = "00:00";
+                    textBlockCurrentPos.Text = "00:00";
+                }
                 
-                textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
             }
             
+        }
+
+        private void mineAlb_Click(object sender, RoutedEventArgs e)
+        {
+            if (albumsStatus == false)
+            {
+                MenuItem m = (MenuItem)sender;
+
+                Playlist playlist = data.Playlists.Find(x => x.Title == m.Header.ToString());
+
+                Album mine = data.Albums[listBoxAlbums.SelectedIndex];
+
+                foreach(Song song in mine.Songs)
+                {
+                    playlist.Songs.Add(song);
+                }
+
+            }
+            else
+            {
+                MenuItem m = (MenuItem)sender;
+                foreach (Song mine in listBoxAlbums.SelectedItems)
+                {
+                    Song song = mine;
+
+                    Playlist selected = data.Playlists.Find(x => x.Title == m.Header.ToString());
+
+                    if (selected != null)
+                    {
+                        selected.Songs.Add(song);
+                    }
+                }
+            }
         }
 
         private void mine_Click(object sender, RoutedEventArgs e)
@@ -466,13 +533,15 @@ namespace WpfAudio2
 
         private void buttonRemovePlaylist_Click(object sender, RoutedEventArgs e)
         {
-            if(data.Playlists[listBoxPlaylists.SelectedIndex] != null)
+            if(listBoxPlaylists.SelectedIndex>-1 && listBoxPlaylists.SelectedIndex<listBoxPlaylists.Items.Count)
             {
-                data.Playlists.Remove(data.Playlists[listBoxPlaylists.SelectedIndex]);
+                if (data.Playlists[listBoxPlaylists.SelectedIndex] != null)
+                {
+                    data.Playlists.Remove(data.Playlists[listBoxPlaylists.SelectedIndex]);
 
-                listBoxPlaylists.Items.Refresh();
+                    listBoxPlaylists.Items.Refresh();
+                }
             }
-            
         }
 
         private void addToPlaylist_Selected(object sender, RoutedEventArgs e)
@@ -510,7 +579,10 @@ namespace WpfAudio2
         {
             while (true)
             {
+                if(player.playState == WMPPlayState.wmppsPlaying)
+                {
                 update_Slider(currentSong);
+                }
                 
                 await Task.Delay(300);
             }
@@ -529,6 +601,11 @@ namespace WpfAudio2
             player.controls.currentPosition = (sliderPosition.Value / 100) * TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture).TotalSeconds;
             TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
             textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
+        }
+
+        private void addToPlaylistfromAlb_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 

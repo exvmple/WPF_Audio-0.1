@@ -27,7 +27,13 @@
             </TabItem>
             <TabItem x:Name="TabAlbums" Header="Albums" Width="70">
                 <Grid Background="#FFE5E5E5" Margin="0,0,94,99">
-                    <ListBox x:Name="listBoxAlbums" Height="340" VerticalAlignment="Top" Margin="0,0,-96,-33" HorizontalAlignment="Left" Width="338" MouseDoubleClick="listBoxAlbums_MouseDoubleClick"/>
+                    <ListBox x:Name="listBoxAlbums" Height="340" VerticalAlignment="Top" Margin="0,0,-96,-33" HorizontalAlignment="Left" Width="338" MouseDoubleClick="listBoxAlbums_MouseDoubleClick" SelectionMode="Extended">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem x:Name="addToPlaylistfromAlb" Header="Add to playlist" Click="addToPlaylistfromAlb_Click"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabPlaylists" Header="Playlists" Width="70">
