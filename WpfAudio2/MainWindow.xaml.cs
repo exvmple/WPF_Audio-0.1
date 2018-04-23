@@ -625,6 +625,10 @@ namespace WpfAudio2
 
                 listBoxPlaylists.Items.Refresh();
             }
+            else
+            {
+
+            }
         }
     }
 
