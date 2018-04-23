@@ -14,6 +14,7 @@ using System.Resources;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls.Primitives;
+using System.Timers;
 
 namespace WpfAudio2
 {
@@ -161,6 +162,7 @@ namespace WpfAudio2
             }
         }
 
+
     }
 
     /// <summary>
@@ -173,12 +175,16 @@ namespace WpfAudio2
   
         int temp = 0;
         int selectedPlaylist = -1;
+        int ffstatus = -1;
         string defdir = @"D:\C#\repos\Tragic City";
         ProgramData data = new ProgramData();
         Song currentSong;
+        List<Song> currentSource = new List<Song>();
+        public delegate bool Predicate<in Song>(Song obj);
         WMPLib.WindowsMediaPlayer player = new WMPLib.WindowsMediaPlayer();
+        private static System.Timers.Timer timer;
+        private static System.Timers.Timer nTimer;
         
-    
         public MainWindow()
         {
             InitializeComponent();
@@ -186,11 +192,64 @@ namespace WpfAudio2
             fillBoxes();
             listBoxSongs.SelectedIndex = 0;
 
+            timer = new System.Timers.Timer();
+            timer.Interval = 500;
 
+            timer.AutoReset = true;
+
+            timer.Elapsed += Timer_Elapsed;
+
+            player.PlayStateChange += Player_PlayStateChange;
+            
             DoWorkAsyncInfiniteLoop();
 
         }
 
+        private void Player_PlayStateChange(int NewState)
+        {
+            if((WMPPlayState)NewState == WMPPlayState.wmppsMediaEnded)
+            {
+                if (currentSong != null)
+                {
+                    int temp = currentSource.FindIndex(x => x.Title == currentSong.Title && x.Artist == currentSong.Artist);
+
+                    if (temp + 1 < currentSource.Count)
+                    {
+                        currentSong = currentSource[temp + 1];
+
+                        player.URL = currentSong.Directory;
+                        player.controls.play();
+
+                        UpdatePlayer(currentSong);
+
+                    }
+                    else
+                    {
+                        currentSong = null;
+                    }
+
+                }
+                SetTimer();
+                
+                UpdatePlayer(currentSong);
+            }
+        }
+
+        private void SetTimer()
+        {
+            nTimer = new System.Timers.Timer(200);
+            nTimer.Elapsed += OnTimedEvent;
+            nTimer.Enabled = true;
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            nTimer.Stop();
+            if(currentSong!=null)
+            {
+                player.controls.play();
+            }
+        }
 
 
         void fillBoxes()
@@ -275,14 +334,7 @@ namespace WpfAudio2
             {
                 if(currentSong!=null)
                 {
-                    tabPlayerPic.Source = new BitmapImage(new System.Uri(currentSong.Album.Cover.Filename));
-                    textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
-
-                    TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
-                    TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
-
-
-                    textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
+                    UpdatePlayer(currentSong);
                 }
                 else
                 {
@@ -382,6 +434,7 @@ namespace WpfAudio2
             if (player.URL != data.Songs[listBoxSongs.SelectedIndex].Directory)
             {
                 currentSong = data.Songs[listBoxSongs.SelectedIndex];
+                currentSource = data.Songs;
                 player.URL = data.Songs[listBoxSongs.SelectedIndex].Directory;
                 player.controls.play();
                 buttonPlayPause.Content = "Pause";
@@ -414,6 +467,7 @@ namespace WpfAudio2
                 else
                 {
                     currentSong = data.Albums[temp].Songs[listBoxAlbums.SelectedIndex];
+                    currentSource = data.Albums[temp].Songs;
                     player.URL = data.Albums[temp].Songs[listBoxAlbums.SelectedIndex].Directory;
                     player.controls.play();
                     buttonPlayPause.Content = "Pause";
@@ -506,6 +560,7 @@ namespace WpfAudio2
                 else
                 {
                     currentSong = data.Playlists[temp].Songs[listBoxPlaylists.SelectedIndex];
+                    currentSource = data.Playlists[temp].Songs;
                     player.URL = data.Playlists[temp].Songs[listBoxPlaylists.SelectedIndex].Directory;
                     player.controls.play();
                     buttonPlayPause.Content = "Pause";
@@ -575,7 +630,6 @@ namespace WpfAudio2
                 
                 sliderPosition.Value= (cur.TotalSeconds / dur.TotalSeconds) * 100;
                 textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
-
             }
             
         }
@@ -583,14 +637,17 @@ namespace WpfAudio2
         private async Task DoWorkAsyncInfiniteLoop()
         {
             while (true)
+                await NewMethod();
+        }
+
+        private async Task NewMethod()
+        {
+            if (player.playState == WMPPlayState.wmppsPlaying)
             {
-                if(player.playState == WMPPlayState.wmppsPlaying)
-                {
                 update_Slider(currentSong);
-                }
-                
-                await Task.Delay(300);
             }
+
+            await Task.Delay(300);
         }
 
         public class SliderIgnoreDelta : Slider
@@ -606,6 +663,11 @@ namespace WpfAudio2
             player.controls.currentPosition = (sliderPosition.Value / 100) * TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture).TotalSeconds;
             TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
             textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
+
+            if(player.playState != WMPPlayState.wmppsPlaying)
+            {
+                player.controls.play();
+            }
         }
 
         private void addToPlaylistfromAlb_Click(object sender, RoutedEventArgs e)
@@ -630,6 +692,119 @@ namespace WpfAudio2
 
             }
         }
+        
+        private void UpdatePlayer(Song currentSong)
+        {
+
+            tabPlayerPic.Source = new BitmapImage(new System.Uri(currentSong.Album.Cover.Filename));
+            textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
+
+            TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
+            TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
+
+
+            textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
+        }
+
+
+        private void buttonNext_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentSong != null)
+            {
+                int temp = currentSource.FindIndex(x => x.Title == currentSong.Title && x.Artist == currentSong.Artist);
+
+                if (temp + 1 < currentSource.Count)
+                {
+                    currentSong = currentSource[temp + 1];
+
+                    player.URL = currentSong.Directory;
+                    player.controls.play();
+
+                    UpdatePlayer(currentSong);
+
+                }
+                else
+                {
+
+                }
+
+            }
+        }
+        
+        private void buttonPrev_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentSong != null)
+            {
+                int temp = currentSource.FindIndex(x => x.Title == currentSong.Title && x.Artist == currentSong.Artist);
+
+                if (temp - 1 > -1)
+                {
+                    currentSong = currentSource[temp - 1];
+
+                    player.URL = currentSong.Directory;
+                    player.controls.play();
+
+                    UpdatePlayer(currentSong);
+                }
+                else
+                {
+
+                }
+
+            }
+        }
+
+        private void buttonPrev_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            timer.Enabled = true;
+            ffstatus = 0;
+        }
+        private void buttonPrev_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            timer.Enabled = false;
+        }
+
+        private void buttonNext_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            timer.Enabled = true;
+            ffstatus = 1;
+        }
+        private void buttonNext_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            timer.Enabled = false;
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if(ffstatus==0)
+            {
+                if (player.controls.currentPosition - 5 > 0)
+                {
+                    player.controls.currentPosition -= 5;
+                }
+                else
+                {
+                    player.controls.currentPosition = 0;
+                }
+            }
+            else
+            {
+                if(ffstatus==1)
+                {
+                    if (player.controls.currentPosition + 5 < player.currentMedia.duration)
+                    {
+                        player.controls.currentPosition += 5;
+                    }
+                }
+                else
+                {
+
+                }
+            }
+            
+        }
+
+        
     }
 
    
