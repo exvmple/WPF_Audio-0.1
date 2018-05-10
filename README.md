@@ -1,11 +1,11 @@
-# WPF_Audio-0.1
+# WPF_Audio-0.2
 A lot of work ahead :) 
 
 For now:
-      Player finds all the songs in the specified (hardcoded for now) folder, creates necessary instances of classes (e.g. Song, Playlists, Albums), finds an album cover (if such exists), can play a song, view contents of albums,create playlists, add songs to playlists via context menu from listBoxSongs, fast forward during songs playback via slider.
+      Player finds all the songs in the specified (hardcoded for now) folder and subfolders, gathers necessary information from ID3 Tags, creates necessary instances of classes (e.g. Song, Playlists, Albums), finds an album cover (if such exists), plays songs in order (repeated and random modes included), views contents of albums,creates playlists, adds songs to playlists via context menu, fast forwards during songs playback via slider or pressing prev/next button, opens a window to tweet the song you're listening to now.
   
 Planned:
-      Folder selection,playing next song after the chosen one has stopped playing, overall improvement of stability of app, refactoring to replace repeated fragments of code with methods, adding songs to playlists from every container of the program via context menu, adding songs to media via drag-and-drop.
+      Folder selection, overall improvement of stability of app (this includes handling exceptions of various kinds), refactoring, adding songs to media via drag-and-drop.
   
 Planned for later:
-      Color schemes, integration with social media (Instagram, Twitter for instance).
+      Color schemes, integration with social media (Instagram for instance), ability to attach screenshot/album cover while posting to Twitter
