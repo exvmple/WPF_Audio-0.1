@@ -15,6 +15,10 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls.Primitives;
 using System.Timers;
+using System.Drawing;
+using System.Windows.Media;
+using System.Web;
+using System.Windows.Shapes;
 
 namespace WpfAudio2
 {
@@ -115,18 +119,19 @@ namespace WpfAudio2
 
         public void GetSongs(string dir)
         {
-            string[] musicFiles = Directory.GetFiles(dir, "*.mp3");
-            string[] covers = Directory.GetFiles(dir, "*over.jpg");
+            string[] musicFiles = Directory.GetFiles(dir, "*.mp3",SearchOption.AllDirectories);
             foreach (string musicFile in musicFiles)
             {
-                var mp3File = TagLib.File.Create(Path.Combine(dir, musicFile));
+                var mp3File = TagLib.File.Create(System.IO.Path.Combine(dir, musicFile));
 
                 Artist tempArtist;
                 Album tempAlbum;
                 string tempTitle = mp3File.Tag.Title;
                 string tempDuration = mp3File.Properties.Duration.ToString("mm\\:ss");
-                string tempDir = Path.Combine(dir, musicFile);
-
+                string tempDir = System.IO.Path.Combine(dir, musicFile); 
+                string tempFolder = tempDir.Substring(0, tempDir.LastIndexOf(@"\"));
+                
+                string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
 
                 Artist tempSongSearch = artists.Find(x => x.Name == mp3File.Tag.Performers[0]);
                 if (tempSongSearch == null)
@@ -143,8 +148,8 @@ namespace WpfAudio2
 
                 if(tempAlbumSearch == null)
                 {
-                   tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0], dir));
-                    albums.Add(tempAlbum);
+                   tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0],dir));
+                   albums.Add(tempAlbum);
                 }
                 else
                 {
@@ -179,6 +184,7 @@ namespace WpfAudio2
         string defdir = @"D:\C#\repos\Tragic City";
         ProgramData data = new ProgramData();
         Song currentSong;
+        Random random = new Random();
         List<Song> currentSource = new List<Song>();
         public delegate bool Predicate<in Song>(Song obj);
         WMPLib.WindowsMediaPlayer player = new WMPLib.WindowsMediaPlayer();
@@ -269,7 +275,7 @@ namespace WpfAudio2
 
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
+            comboBoxNetworks.Visibility = Visibility.Hidden;
            if(!TabAlbums.IsSelected)
             {
                 buttonAlbBack.Visibility = Visibility.Hidden;
@@ -332,18 +338,9 @@ namespace WpfAudio2
             }
             if (TabPlayer.IsSelected)
             {
-                if(currentSong!=null)
-                {
-                    UpdatePlayer(currentSong);
-                }
-                else
-                {
-                    tabPlayerPic.Source = new BitmapImage(new Uri(Path.Combine(Environment.CurrentDirectory,@"temp\no.png")));
-                    textBlockSongInfo.Text = "none";
-                    textBlockDuration.Text = "00:00";
-                    textBlockCurrentPos.Text = "00:00";
-                }
-                
+                UpdatePlayer(currentSong);
+
+                comboBoxNetworks.Visibility = Visibility.Visible;
             }
             
         }
@@ -401,8 +398,11 @@ namespace WpfAudio2
         {
             if(player.playState == WMPPlayState.wmppsUndefined)
             {
-                player.controls.play();
-                buttonPlayPause.Content = "Pause";
+                if(player.URL != null)
+                {
+                    player.controls.play();
+                    buttonPlayPause.Content = "Pause";
+                } 
             }
             else
             {
@@ -549,12 +549,7 @@ namespace WpfAudio2
 
                     playlistStatus = true;
 
-                    buttonPlaylistBack.Visibility = Visibility.Visible;
-                    buttonAddPlaylist.Visibility = Visibility.Hidden;
-                    buttonRemovePlaylist.Visibility = Visibility.Hidden;
-
-                    buttonPlaylistSongAdd.Visibility = Visibility.Visible;
-                    buttonPlaylistSongRemove.Visibility = Visibility.Visible;
+                    invert(0);
 
                 }
                 else
@@ -565,6 +560,31 @@ namespace WpfAudio2
                     player.controls.play();
                     buttonPlayPause.Content = "Pause";
                 }
+            }
+        }
+
+        private void invert(int status) // Controls the visibility of buttons in TabPlaylist
+        {
+            if(status==0)
+            {
+                buttonPlaylistBack.Visibility = Visibility.Visible;
+                buttonAddPlaylist.Visibility = Visibility.Hidden;
+                buttonRemovePlaylist.Visibility = Visibility.Hidden;
+
+                buttonPlaylistSongAdd.Visibility = Visibility.Visible;
+                buttonPlaylistSongRemove.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                if(status==1)
+                {
+                    buttonPlaylistBack.Visibility = Visibility.Hidden;
+                    buttonAddPlaylist.Visibility = Visibility.Visible;
+                    buttonRemovePlaylist.Visibility = Visibility.Visible;
+
+                    buttonPlaylistSongAdd.Visibility = Visibility.Hidden;
+                    buttonPlaylistSongRemove.Visibility = Visibility.Hidden;
+                }  
             }
         }
 
@@ -581,12 +601,7 @@ namespace WpfAudio2
             
             playlistStatus = false;
 
-            buttonPlaylistBack.Visibility = Visibility.Hidden;
-            buttonAddPlaylist.Visibility = Visibility.Visible;
-            buttonRemovePlaylist.Visibility = Visibility.Visible;
-
-            buttonPlaylistSongAdd.Visibility = Visibility.Hidden;
-            buttonPlaylistSongRemove.Visibility = Visibility.Hidden;
+            invert(1);
 
             selectedPlaylist = -1;
         }
@@ -695,15 +710,25 @@ namespace WpfAudio2
         
         private void UpdatePlayer(Song currentSong)
         {
+            if(currentSong!=null)
+            {
+                tabPlayerPic.Source = new BitmapImage(new System.Uri(currentSong.Album.Cover.Filename));
+                textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
 
-            tabPlayerPic.Source = new BitmapImage(new System.Uri(currentSong.Album.Cover.Filename));
-            textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
-
-            TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
-            TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
+                TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
+                TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
 
 
-            textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
+                textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
+            }
+            else
+            {
+                tabPlayerPic.Source = new BitmapImage(new Uri(System.IO.Path.Combine(Environment.CurrentDirectory, @"temp\no.png")));
+                textBlockSongInfo.Text = "none";
+                textBlockDuration.Text = "00:00";
+                textBlockCurrentPos.Text = "00:00";
+            }
+
         }
 
 
@@ -711,23 +736,49 @@ namespace WpfAudio2
         {
             if (currentSong != null)
             {
-                int temp = currentSource.FindIndex(x => x.Title == currentSong.Title && x.Artist == currentSong.Artist);
-
-                if (temp + 1 < currentSource.Count)
+                if(checkRepeat.IsChecked != true)
                 {
-                    currentSong = currentSource[temp + 1];
+                    int temp = currentSource.IndexOf(currentSong);
+                    if(checkRandom.IsChecked != true)
+                    {
+                        if (temp + 1 < currentSource.Count)
+                        {
+                            currentSong = currentSource[temp + 1];
+                        }
+                        else
+                        {
+                            currentSong = currentSource[0];
+                        }
+                    }
+                    else
+                    {
+                        int next = temp;
+                        while(next == currentSource.IndexOf(currentSong))
+                        {
+                            next = random.Next(0, currentSource.Count);
+                        }
 
+                        currentSong = currentSource[next];
+
+                    }
+                    
+                }
+                player.URL = currentSong.Directory;
+                player.controls.play();
+
+                UpdatePlayer(currentSong);
+
+            }
+            else
+            {
+                if(currentSource!=null)
+                {
+                    currentSong = currentSource[0];
                     player.URL = currentSong.Directory;
                     player.controls.play();
 
                     UpdatePlayer(currentSong);
-
                 }
-                else
-                {
-
-                }
-
             }
         }
         
@@ -735,21 +786,39 @@ namespace WpfAudio2
         {
             if (currentSong != null)
             {
-                int temp = currentSource.FindIndex(x => x.Title == currentSong.Title && x.Artist == currentSong.Artist);
-
-                if (temp - 1 > -1)
+                if (checkRepeat.IsChecked != true)
                 {
-                    currentSong = currentSource[temp - 1];
+                    int temp = currentSource.IndexOf(currentSong);
+                    if (checkRandom.IsChecked != true)
+                    {
+                        if (temp - 1 > -1)
+                        {
+                            currentSong = currentSource[temp - 1];
+                        }
+                        else
+                        {
+                            currentSong = currentSource[currentSource.Count-1];
+                        }
+                    }
+                    else
+                    {
+                        if (currentSource.Count > 1)
+                        { 
+                            int next = temp;
+                            while (next == currentSource.IndexOf(currentSong))
+                            {
+                                next = random.Next(0, currentSource.Count-1);
+                            }
+                            currentSong = currentSource[next];
+                        }  
+                        
+                    }
 
-                    player.URL = currentSong.Directory;
-                    player.controls.play();
-
-                    UpdatePlayer(currentSong);
                 }
-                else
-                {
+                player.URL = currentSong.Directory;
+                player.controls.play();
 
-                }
+                UpdatePlayer(currentSong);
 
             }
         }
@@ -804,8 +873,47 @@ namespace WpfAudio2
             
         }
 
-        
+        private void comboInstagram_Selected(object sender, RoutedEventArgs e)
+        {
+            RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap((int)Width+1,(int)Height, 96, 96, PixelFormats.Pbgra32);
+            renderTargetBitmap.Render(this);
+            PngBitmapEncoder pngImage = new PngBitmapEncoder();
+            pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
+            Stream fileStream = System.IO.File.Create("temp.jpg");
+            pngImage.Save(fileStream);
+
+            comboInstagram.IsSelected = false;
+            
+        }
+
+        private void comboTwitter_Selected(object sender, RoutedEventArgs e)
+        {
+            if(currentSong!=null)
+            {
+                string link = "https://twitter.com/intent/tweet?text=%23NowPlaying%20";
+
+                string tempArtist = HttpUtility.UrlEncode(currentSong.Artist.Name);
+                string tempSong = HttpUtility.UrlEncode(currentSong.Title);
+                tempSong = String.Concat(tempArtist, " - ", tempSong);
+
+                link = String.Concat(link, tempSong);
+
+                Window1 window1 = new Window1(link);
+                window1.Show();
+
+                window1.Window1Closing += Window1_Window1Closing;
+                
+
+            }
+            
+        }
+
+        private void Window1_Window1Closing(Window1 a)
+        {
+            comboTwitter.IsSelected = false;
+            a.twitterBrowse.Dispose();
+        }
+
     }
 
-   
 }
