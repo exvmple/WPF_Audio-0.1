@@ -130,8 +130,8 @@ namespace WpfAudio2
                 string tempDuration = mp3File.Properties.Duration.ToString("mm\\:ss");
                 string tempDir = System.IO.Path.Combine(dir, musicFile); 
                 string tempFolder = tempDir.Substring(0, tempDir.LastIndexOf(@"\"));
+                Cover blank = new Cover("no.png",System.IO.Path.Combine(Environment.CurrentDirectory,"temp"));
                 
-                string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
 
                 Artist tempSongSearch = artists.Find(x => x.Name == mp3File.Tag.Performers[0]);
                 if (tempSongSearch == null)
@@ -148,8 +148,17 @@ namespace WpfAudio2
 
                 if(tempAlbumSearch == null)
                 {
-                   tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0],dir));
-                   albums.Add(tempAlbum);
+                    
+                    string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
+                    if (covers.Length > 0)
+                    {
+                        tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0], dir));
+                    }
+                    else
+                    {
+                        tempAlbum = new Album(mp3File.Tag.Album, tempArtist, blank);
+                    }
+                    albums.Add(tempAlbum);
                 }
                 else
                 {
@@ -276,6 +285,17 @@ namespace WpfAudio2
         private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             comboBoxNetworks.Visibility = Visibility.Hidden;
+            if(!TabPlaylists.IsSelected)
+            {
+                buttonPlaylistBack.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                if(playlistStatus)
+                {
+                    buttonPlaylistBack.Visibility = Visibility.Visible;
+                }
+            }
            if(!TabAlbums.IsSelected)
             {
                 buttonAlbBack.Visibility = Visibility.Hidden;
@@ -712,7 +732,7 @@ namespace WpfAudio2
         {
             if(currentSong!=null)
             {
-                tabPlayerPic.Source = new BitmapImage(new System.Uri(currentSong.Album.Cover.Filename));
+                tabPlayerPic.Source = new BitmapImage(new System.Uri(System.IO.Path.Combine(currentSong.Album.Cover.Dir,currentSong.Album.Cover.Filename)));
                 textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
 
                 TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);

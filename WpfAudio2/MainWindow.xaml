@@ -65,7 +65,7 @@
             </StackPanel>
         </GroupBox>
         <Button x:Name="buttonAlbBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="74" Visibility="Hidden" Click="buttonAlbBack_Click"/>
-        <Button x:Name="buttonPlaylistBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="70" Visibility="Hidden" Click="buttonPlaylistBack_Click_1" Margin="0,25,0,0"/>
+        <Button x:Name="buttonPlaylistBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="70" Visibility="Hidden" Click="buttonPlaylistBack_Click_1"/>
         <ComboBox x:Name="comboBoxNetworks" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="25" Margin="280,55,0,0" VerticalAlignment="Top" Width="25" Visibility="Hidden">
             <ComboBox.LayoutTransform>
                 <RotateTransform Angle="270" />
