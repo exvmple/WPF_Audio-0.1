@@ -89,7 +89,20 @@ namespace WpfAudio2
         public Album Album { get => album; set => album = value; }
         public Artist Artist { get => artist; set => artist = value; }
     
-        public string Whole { get => this.title + " - " + artist.Name; }
+        public string Whole
+        {
+            get
+            {
+                if(this.artist.Name != "(unknown)")
+                {
+                    return this.Title + " - " + this.artist.Name;
+                }
+                else
+                {
+                    return this.Title;
+                }
+            }
+        }
     }
 
     class Playlist
@@ -120,6 +133,13 @@ namespace WpfAudio2
         public void GetSongs(string dir)
         {
             string[] musicFiles = Directory.GetFiles(dir, "*.mp3",SearchOption.AllDirectories);
+
+            Cover blank = new Cover("no.png", System.IO.Path.Combine(Environment.CurrentDirectory, "temp"));
+            Artist unknown = new Artist("(unknown)");
+            artists.Add(unknown);
+            Album untitled = new Album("(untitled)", unknown, blank);
+            albums.Add(untitled);
+
             foreach (string musicFile in musicFiles)
             {
                 var mp3File = TagLib.File.Create(System.IO.Path.Combine(dir, musicFile));
@@ -128,50 +148,62 @@ namespace WpfAudio2
                 Album tempAlbum;
                 string tempTitle = mp3File.Tag.Title;
                 string tempDuration = mp3File.Properties.Duration.ToString("mm\\:ss");
-                string tempDir = System.IO.Path.Combine(dir, musicFile); 
+                string tempDir = System.IO.Path.Combine(dir, musicFile);
                 string tempFolder = tempDir.Substring(0, tempDir.LastIndexOf(@"\"));
-                Cover blank = new Cover("no.png",System.IO.Path.Combine(Environment.CurrentDirectory,"temp"));
                 
 
-                Artist tempSongSearch = artists.Find(x => x.Name == mp3File.Tag.Performers[0]);
-                if (tempSongSearch == null)
+                if (mp3File.Tag.Performers == null || mp3File.Tag.Title == null || mp3File.Tag.Album == null)
                 {
-                    tempArtist = new Artist(mp3File.Tag.Performers[0]);
-                    artists.Add(tempArtist);
+                    string title = tempDir.Substring(tempDir.LastIndexOf(@"\")+1);
+                    Song temp = new Song(unknown, untitled, title, tempDir, tempDuration);
+                    if (!(Songs.Any(x => x.Title == temp.Title)))
+                    {
+                        Songs.Add(temp);
+                        untitled.Songs.Add(temp);
+                    }
                 }
                 else
                 {
-                    tempArtist = tempSongSearch; 
-                }
-
-                Album tempAlbumSearch = albums.Find(x => x.Title == mp3File.Tag.Album && tempArtist.Name == x.Artist.Name);
-
-                if(tempAlbumSearch == null)
-                {
-                    
-                    string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
-                    if (covers.Length > 0)
+                    Artist tempSongSearch = artists.Find(x => x.Name == mp3File.Tag.Performers[0]);
+                    if (tempSongSearch == null)
                     {
-                        tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0], dir));
+                        tempArtist = new Artist(mp3File.Tag.Performers[0]);
+                        artists.Add(tempArtist);
                     }
                     else
                     {
-                        tempAlbum = new Album(mp3File.Tag.Album, tempArtist, blank);
+                        tempArtist = tempSongSearch;
                     }
-                    albums.Add(tempAlbum);
-                }
-                else
-                {
-                    tempAlbum = tempAlbumSearch;
-                }
-               
-                Song temp = new Song(tempArtist, tempAlbum, tempTitle, tempDir, tempDuration);
-                if (!(Songs.Any(x => x.Title == temp.Title && x.Artist == temp.Artist)))
-                {
-                    
-                    Songs.Add(temp);
-                    tempAlbum.Songs.Add(temp);
-                    
+
+                    Album tempAlbumSearch = albums.Find(x => x.Title == mp3File.Tag.Album && tempArtist.Name == x.Artist.Name);
+
+                    if (tempAlbumSearch == null)
+                    {
+
+                        string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
+                        if (covers.Length > 0)
+                        {
+                            tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0], dir));
+                        }
+                        else
+                        {
+                            tempAlbum = new Album(mp3File.Tag.Album, tempArtist, blank);
+                        }
+                        albums.Add(tempAlbum);
+                    }
+                    else
+                    {
+                        tempAlbum = tempAlbumSearch;
+                    }
+
+                    Song temp = new Song(tempArtist, tempAlbum, tempTitle, tempDir, tempDuration);
+                    if (!(Songs.Any(x => x.Title == temp.Title && x.Artist == temp.Artist)))
+                    {
+
+                        Songs.Add(temp);
+                        tempAlbum.Songs.Add(temp);
+
+                    }
                 }
             }
         }
@@ -733,7 +765,16 @@ namespace WpfAudio2
             if(currentSong!=null)
             {
                 tabPlayerPic.Source = new BitmapImage(new System.Uri(System.IO.Path.Combine(currentSong.Album.Cover.Dir,currentSong.Album.Cover.Filename)));
-                textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
+
+                if(currentSong.Artist.Name != "(unknown)")
+                {
+                    textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
+                }
+                else
+                {
+                    textBlockSongInfo.Text = currentSong.Title;
+                }
+               
 
                 TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
                 TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
@@ -785,6 +826,7 @@ namespace WpfAudio2
                 }
                 player.URL = currentSong.Directory;
                 player.controls.play();
+                buttonPlayPause.Content = "Pause";
 
                 UpdatePlayer(currentSong);
 
@@ -793,11 +835,13 @@ namespace WpfAudio2
             {
                 if(currentSource!=null)
                 {
-                    currentSong = currentSource[0];
-                    player.URL = currentSong.Directory;
-                    player.controls.play();
+                        currentSong = currentSource[0];
+                        player.URL = currentSong.Directory;
+                        player.controls.play();
+                        buttonPlayPause.Content = "Pause";
 
-                    UpdatePlayer(currentSong);
+                        UpdatePlayer(currentSong);
+                    
                 }
             }
         }
@@ -837,6 +881,7 @@ namespace WpfAudio2
                 }
                 player.URL = currentSong.Directory;
                 player.controls.play();
+                buttonPlayPause.Content = "Pause";
 
                 UpdatePlayer(currentSong);
 
@@ -920,9 +965,9 @@ namespace WpfAudio2
 
                 Window1 window1 = new Window1(link);
                 window1.Show();
-
-                window1.Window1Closing += Window1_Window1Closing;
+                this.IsEnabled = false;
                 
+                window1.Window1Closing += Window1_Window1Closing;
 
             }
             
@@ -932,8 +977,14 @@ namespace WpfAudio2
         {
             comboTwitter.IsSelected = false;
             a.twitterBrowse.Dispose();
+
+            this.IsEnabled = true;
         }
 
+        private void listBoxSongs_Drop(object sender, DragEventArgs e)
+        {
+
+        }
     }
 
 }

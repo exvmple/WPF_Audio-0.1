@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfAudio2"
         mc:Ignorable="d"
-        Title="WindowTwitter" Height="292" Width="529" Closing="Window_Closing" Closed="Window_Closed">
+        Title="WindowTwitter" Height="292" Width="529" Closing="Window_Closing" Closed="Window_Closed" ResizeMode="NoResize">
     <Grid Margin="0,0,308,132">
         <WebBrowser x:Name="twitterBrowse" HorizontalAlignment="Left" Height="255" Margin="0,0,-302,-126" VerticalAlignment="Top" Width="515"/>
 

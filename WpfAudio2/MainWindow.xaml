@@ -15,7 +15,7 @@
         <TabControl x:Name="tabControl" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="435" Margin="0,25,-3,-6" VerticalAlignment="Top" Width="320" SelectionChanged="tabControl_SelectionChanged" RenderTransformOrigin="0.5,0.5">
             <TabItem x:Name="TabSongs" Header="Songs" Width="70" BorderBrush="#FFACACAC" HorizontalAlignment="Left" Margin="0">
                 <Grid Background="#FFE5E5E5" Margin="0,0,76,96">
-                    <ListBox x:Name="listBoxSongs" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="listBoxSongs_SelectionChanged" MouseDoubleClick="listBoxSongs_MouseDoubleClick" MouseRightButtonDown="listBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305">
+                    <ListBox x:Name="listBoxSongs" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="listBoxSongs_SelectionChanged" MouseDoubleClick="listBoxSongs_MouseDoubleClick" MouseRightButtonDown="listBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305" Drop="listBoxSongs_Drop">
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem x:Name="addToPlaylist" Header="Add to playlist" Click="addToPlaylist_Click">
