@@ -12,13 +12,13 @@
             <ColumnDefinition Width="0*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <TabControl x:Name="tabControl" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="435" Margin="0,25,-3,-6" VerticalAlignment="Top" Width="320" SelectionChanged="tabControl_SelectionChanged" RenderTransformOrigin="0.5,0.5">
-            <TabItem x:Name="TabSongs" Header="Songs" Width="70" BorderBrush="#FFACACAC" HorizontalAlignment="Left" Margin="0">
+        <TabControl x:Name="tabControl" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="435" Margin="0,25,-3,-6" VerticalAlignment="Top" Width="320" SelectionChanged="TabControl_SelectionChanged" RenderTransformOrigin="0.5,0.5">
+            <TabItem x:Name="TabSongs" Header="Songs" Width="70" BorderBrush="#FFACACAC" HorizontalAlignment="Left" Margin="0" AllowDrop="True">
                 <Grid Background="#FFE5E5E5" Margin="0,0,76,96">
-                    <ListBox x:Name="listBoxSongs" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="listBoxSongs_SelectionChanged" MouseDoubleClick="listBoxSongs_MouseDoubleClick" MouseRightButtonDown="listBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305" Drop="listBoxSongs_Drop">
+                    <ListBox x:Name="listBoxSongs" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="ListBoxSongs_SelectionChanged" MouseDoubleClick="ListBoxSongs_MouseDoubleClick" MouseRightButtonDown="ListBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305" Drop="ListBoxSongs_Drop">
                         <ListBox.ContextMenu>
                             <ContextMenu>
-                                <MenuItem x:Name="addToPlaylist" Header="Add to playlist" Click="addToPlaylist_Click">
+                                <MenuItem x:Name="addToPlaylist" Header="Add to playlist" Click="AddToPlaylist_Click">
                                 </MenuItem>
                             </ContextMenu>
                         </ListBox.ContextMenu>
@@ -27,10 +27,10 @@
             </TabItem>
             <TabItem x:Name="TabAlbums" Header="Albums" Width="70" BorderBrush="#FFACACAC" Background="#FFE5E5E5" >
                 <Grid Background="#FFE5E5E5" Margin="0,0,94,99">
-                    <ListBox x:Name="listBoxAlbums" Height="340" VerticalAlignment="Top" Margin="0,0,-97,-33" HorizontalAlignment="Left" Width="317" MouseDoubleClick="listBoxAlbums_MouseDoubleClick" SelectionMode="Extended">
+                    <ListBox x:Name="listBoxAlbums" Height="340" VerticalAlignment="Top" Margin="0,0,-97,-33" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended">
                         <ListBox.ContextMenu>
                             <ContextMenu>
-                                <MenuItem x:Name="addToPlaylistfromAlb" Header="Add to playlist" Click="addToPlaylistfromAlb_Click"/>
+                                <MenuItem x:Name="addToPlaylistfromAlb" Header="Add to playlist" Click="AddToPlaylistfromAlb_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
@@ -38,18 +38,18 @@
             </TabItem>
             <TabItem x:Name="TabPlaylists" Header="Playlists" Width="70">
                 <Grid Background= "#FFE5E5E5" Margin="0,0,1,99">
-                    <ListBox x:Name="listBoxPlaylists" HorizontalAlignment="Left" Height="310" VerticalAlignment="Top" Width="312" Margin="0,30,0,-7" MouseDown="listBoxPlaylists_MouseDown" MouseDoubleClick="listBoxPlaylists_MouseDoubleClick"/>
-                    <Button x:Name="buttonAddPlaylist" Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Height="30" Click="buttonAddPlaylist_Click"/>
-                    <Button x:Name="buttonRemovePlaylist" Content="-" HorizontalAlignment="Left" Margin="76,0,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="buttonRemovePlaylist_Click"/>
+                    <ListBox x:Name="listBoxPlaylists" HorizontalAlignment="Left" Height="310" VerticalAlignment="Top" Width="312" Margin="0,30,0,-7" MouseDown="ListBoxPlaylists_MouseDown" MouseDoubleClick="ListBoxPlaylists_MouseDoubleClick"/>
+                    <Button x:Name="buttonAddPlaylist" Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Height="30" Click="ButtonAddPlaylist_Click"/>
+                    <Button x:Name="buttonRemovePlaylist" Content="-" HorizontalAlignment="Left" Margin="76,0,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="ButtonRemovePlaylist_Click"/>
                     <Button x:Name="buttonPlaylistSongAdd" Content="Add songs..." HorizontalAlignment="Left" Margin="161,0,0,0" VerticalAlignment="Top" Width="84" Height="30" Visibility="Hidden"/>
-                    <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,0,0,0" VerticalAlignment="Top" Width="95" Height="30" Visibility="Hidden" Click="buttonPlaylistSongRemove_Click"/>
+                    <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,0,0,0" VerticalAlignment="Top" Width="95" Height="30" Visibility="Hidden" Click="ButtonPlaylistSongRemove_Click"/>
                 </Grid>
             </TabItem>
-            <TabItem x:Name="TabPlayer" Header="Player" Width="100">
+            <TabItem x:Name="TabPlayer" Header="Player" Width="100" AllowDrop="True" Drop="TabPlayer_Drop">
                 <Grid Margin="0,0,1,70">
                     <Image x:Name="tabPlayerPic" HorizontalAlignment="Left" Height="210" Margin="57,28,0,0" VerticalAlignment="Top" Width="200"/>
                     <TextBlock x:Name="textBlockSongInfo" HorizontalAlignment="Left" Height="44" Margin="10,235,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="322"/>
-                    <Slider x:Name="sliderPosition" Thumb.DragCompleted="sliderPosition_DragCompleted" ValueChanged="sliderPosition_ValueChanged" Height="28" Margin="10,305,10,-3" Minimum="0" Maximum="100" />
+                    <Slider x:Name="sliderPosition" Thumb.DragCompleted="SliderPosition_DragCompleted" ValueChanged="SliderPosition_ValueChanged" Height="28" Margin="10,305,10,-3" Minimum="0" Maximum="100" />
                     <TextBlock x:Name="textBlockCurrentPos" HorizontalAlignment="Left" Margin="10,284,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" />
                     <TextBlock x:Name="textBlockDuration" HorizontalAlignment="Left" Margin="259,283,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" RenderTransformOrigin="-0.012,0.062" Width="53"/>
                 </Grid>
@@ -58,14 +58,14 @@
         <GroupBox x:Name="groupBoxButtons" Grid.ColumnSpan="2" Header="" Margin="0,395,0,-1" BorderThickness="0" HorizontalAlignment="Left" Width="315" Height="60" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" Margin="-5,-15,-7,-7" Height="75" VerticalAlignment="Center">
                 <CheckBox x:Name="checkRandom" Content="Random" HorizontalAlignment="Left" Margin="3,21,31,24" Width="69" VerticalAlignment="Center"/>
-                <Button x:Name="buttonPrev" Content="Prev" Width="40" Margin="-19,21,0,24" Click="buttonPrev_Click" PreviewMouseDown="buttonPrev_MouseDown" PreviewMouseUp="buttonPrev_MouseUp" HorizontalAlignment="Center"/>
-                <Button x:Name="buttonPlayPause" Content="Play" Width="60" HorizontalAlignment="Center" Click="buttonPlayPause_Click" Margin="0,21,0,24"/>
-                <Button x:Name="buttonNext" Content="Next" Width="40" Margin="0,21,32,24" Click="buttonNext_Click" PreviewMouseDown="buttonNext_MouseDown" PreviewMouseUp="buttonNext_PreviewMouseUp" HorizontalAlignment="Center"/>
+                <Button x:Name="buttonPrev" Content="Prev" Width="40" Margin="-19,21,0,24" Click="ButtonPrev_Click" PreviewMouseDown="ButtonPrev_MouseDown" PreviewMouseUp="ButtonPrev_MouseUp" HorizontalAlignment="Center"/>
+                <Button x:Name="buttonPlayPause" Content="Play" Width="60" HorizontalAlignment="Center" Click="ButtonPlayPause_Click" Margin="0,21,0,24"/>
+                <Button x:Name="buttonNext" Content="Next" Width="40" Margin="0,21,32,24" Click="ButtonNext_Click" PreviewMouseDown="ButtonNext_MouseDown" PreviewMouseUp="ButtonNext_PreviewMouseUp" HorizontalAlignment="Center"/>
                 <CheckBox x:Name="checkRepeat" Content="Repeat" Width="58" Margin="-11,0,0,32" HorizontalAlignment="Right" Height="15" VerticalAlignment="Bottom"/>
             </StackPanel>
         </GroupBox>
-        <Button x:Name="buttonAlbBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="74" Visibility="Hidden" Click="buttonAlbBack_Click"/>
-        <Button x:Name="buttonPlaylistBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="70" Visibility="Hidden" Click="buttonPlaylistBack_Click_1"/>
+        <Button x:Name="buttonAlbBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="74" Visibility="Hidden" Click="ButtonAlbBack_Click"/>
+        <Button x:Name="buttonPlaylistBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="70" Visibility="Hidden" Click="ButtonPlaylistBack_Click_1"/>
         <ComboBox x:Name="comboBoxNetworks" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="25" Margin="280,55,0,0" VerticalAlignment="Top" Width="25" Visibility="Hidden">
             <ComboBox.LayoutTransform>
                 <RotateTransform Angle="270" />
@@ -79,8 +79,8 @@
                     </Setter>
                 </Style>
             </ComboBox.ItemContainerStyle>
-            <ComboBoxItem x:Name="comboInstagram" Content="IG" Selected="comboInstagram_Selected"/>
-            <ComboBoxItem x:Name="comboTwitter" Content="TW" Selected="comboTwitter_Selected"/>
+            <ComboBoxItem x:Name="comboInstagram" Content="IG" Selected="ComboInstagram_Selected"/>
+            <ComboBoxItem x:Name="comboTwitter" Content="TW" Selected="ComboTwitter_Selected"/>
         </ComboBox>
         <WebBrowser x:Name="comboTwBrowser"/>
 
