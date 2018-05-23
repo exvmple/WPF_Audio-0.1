@@ -20,19 +20,27 @@
                             <ContextMenu>
                                 <MenuItem x:Name="addToPlaylist" Header="Add to playlist" Click="AddToPlaylist_Click">
                                 </MenuItem>
+                                <MenuItem x:Name="Delete" Header="Delete" Click="Delete_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabAlbums" Header="Albums" Width="70" BorderBrush="#FFACACAC" Background="#FFE5E5E5" >
-                <Grid Background="#FFE5E5E5" Margin="0,0,94,99">
-                    <ListBox x:Name="listBoxAlbums" Height="340" VerticalAlignment="Top" Margin="0,0,-97,-33" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended">
+                <Grid Background="#FFE5E5E5" Margin="0,0,-4,67">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="21*"/>
+                        <ColumnDefinition Width="89*"/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox x:Name="listBoxAlbums" Margin="0,0,-97,-32" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended" Height="340" VerticalAlignment="Top" Grid.ColumnSpan="2" SelectionChanged="listBoxAlbums_SelectionChanged_1">
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem x:Name="addToPlaylistfromAlb" Header="Add to playlist" Click="AddToPlaylistfromAlb_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
+                        <ListBox.Background>
+                            <ImageBrush ImageSource="back.jpg" Opacity="0.4"></ImageBrush>
+                        </ListBox.Background>
                     </ListBox>
                 </Grid>
             </TabItem>

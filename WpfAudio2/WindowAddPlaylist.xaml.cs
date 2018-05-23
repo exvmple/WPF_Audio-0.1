@@ -39,11 +39,14 @@ namespace WpfAudio2
             if (WindowClose != null)
             {
                 WindowClose(this);
+                
             }
         }
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
+            Owner.Effect = null;
+            Owner.IsEnabled = true;
             Close();
         }
     }
