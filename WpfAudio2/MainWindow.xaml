@@ -24,7 +24,7 @@
             <Setter Property="FontWeight" Value="Thin"/>
             <Setter Property="Padding" Value="2"/>
         </Style>
-        
+
         <Style TargetType="{x:Type CheckBox}" x:Key="random">
             <Setter Property="Template">
                 <Setter.Value>
@@ -63,7 +63,7 @@
 
 
     </Window.Resources>
-    <Grid Margin="0,0,0,3" Background="{DynamicResource {x:Static SystemParameters.WindowGlassBrush}}">
+    <Grid Margin="0,0,0,3">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>
             <ColumnDefinition/>
@@ -71,14 +71,31 @@
         <TabControl x:Name="tabControl" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="435" Margin="0,25,-3,-6" VerticalAlignment="Top" Width="320" SelectionChanged="TabControl_SelectionChanged" RenderTransformOrigin="0.5,0.5">
             <TabItem x:Name="TabSongs" Header="Songs" Width="70" BorderBrush="#FFACACAC" HorizontalAlignment="Left" Margin="0" AllowDrop="True">
                 <Grid Background="#FFE5E5E5" Margin="0,0,76,96">
-                    <ListBox x:Name="listBoxSongs" Style="{StaticResource songs}" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="ListBoxSongs_SelectionChanged" MouseDoubleClick="ListBoxSongs_MouseDoubleClick" MouseRightButtonDown="ListBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305" Drop="ListBoxSongs_Drop">
+                    <ListBox x:Name="listBoxSongs" IsEnabled="{Binding Path=EnabledFlagInViewModel, TargetNullValue=false}" Style="{StaticResource songs}" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="ListBoxSongs_SelectionChanged" MouseDoubleClick="ListBoxSongs_MouseDoubleClick" MouseRightButtonDown="ListBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305" Drop="ListBoxSongs_Drop">
                         <ListBox.ContextMenu>
                             <ContextMenu>
+                                <MenuItem x:Name="goToAlbum" Header="Go to album" Click="goToAlbum_Click"/>
                                 <MenuItem x:Name="addToPlaylist" Header="Add to playlist" Click="AddToPlaylist_Click">
                                 </MenuItem>
                                 <MenuItem x:Name="Delete" Header="Delete" Click="Delete_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="2" Width="267">
+                                    <WrapPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Path=Title}" Width="225"/>
+                                        <TextBlock Text="   "/>
+                                        <TextBlock Text="{Binding Path=Duration}" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                    </WrapPanel>
+                                    <WrapPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Artist.Name}" FontSize="11" Opacity="0.8"/>
+                                        <TextBlock Text=" - "/>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album.Title}" FontSize="11" Opacity="0.8" FontStyle="Italic"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                     </ListBox>
                 </Grid>
             </TabItem>
@@ -88,20 +105,64 @@
                         <ColumnDefinition Width="21*"/>
                         <ColumnDefinition Width="89*"/>
                     </Grid.ColumnDefinitions>
-                    <ListBox x:Name="listBoxAlbums" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended" Height="340" VerticalAlignment="Top" Grid.ColumnSpan="2" SelectionChanged="listBoxAlbums_SelectionChanged_1">
+                    <ListBox x:Name="listBoxAlbums" Style="{StaticResource songs}" ItemsSource="{Binding Path=data.Albums}" IsEnabled="{Binding Path=EnabledFlagInViewModel, TargetNullValue=false}" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended" Height="340" VerticalAlignment="Top" Grid.ColumnSpan="2" SelectionChanged="listBoxAlbums_SelectionChanged_1">
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem x:Name="addToPlaylistfromAlb" Header="Add to playlist" Click="AddToPlaylistfromAlb_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
+                        <ListBox.Resources>
+                            <DataTemplate DataType="{x:Type local:Song}">
+                                <StackPanel Orientation="Vertical" Margin="2" Width="267">
+                                    <WrapPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Path=Title}" Width="225"/>
+                                        <TextBlock Text="   "/>
+                                        <TextBlock Text="{Binding Path=Duration}" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                    </WrapPanel>
+                                    <WrapPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Artist.Name}" FontSize="11" Opacity="0.8"/>
+                                        <TextBlock Text=" - "/>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Album.Title}" FontSize="11" Opacity="0.8" FontStyle="Italic"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type local:Album}">
+                                <StackPanel Orientation="Vertical" Margin="2" Width="267">
+                                    <TextBlock Text="{Binding Path=Title}"/>
+                                    <TextBlock Text="{Binding Path=Artist.Name}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.Resources>   
                     </ListBox>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabPlaylists" Header="Playlists" Width="70">
                 <Grid Background= "#FFE5E5E5" Margin="0,0,1,99">
                     <ListBox x:Name="listBoxPlaylists" HorizontalAlignment="Left" Height="310" VerticalAlignment="Top" Width="312" Margin="0,30,0,-7" MouseDown="ListBoxPlaylists_MouseDown" MouseDoubleClick="ListBoxPlaylists_MouseDoubleClick"/>
-                    <Button x:Name="buttonAddPlaylist" Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Height="30" Click="ButtonAddPlaylist_Click"/>
-                    <Button x:Name="buttonRemovePlaylist" Content="-" HorizontalAlignment="Left" Margin="76,0,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="ButtonRemovePlaylist_Click"/>
+                    <Button x:Name="buttonAddPlaylist" Content="+" HorizontalAlignment="Left" Margin="5,3,0,0" VerticalAlignment="Top" Width="30" Height="25" Click="ButtonAddPlaylist_Click">
+                        <Button.Template>
+                            <ControlTemplate>
+                                <Image x:Name="plusImg" Source="icons/plus.png"></Image>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                        <Setter TargetName="plusImg" Property="Source" Value="icons/plus_pressed.png"></Setter>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="buttonRemovePlaylist" Content="-" HorizontalAlignment="Left" Margin="40,5,0,0" VerticalAlignment="Top" Width="30" Height="20" Click="ButtonRemovePlaylist_Click">
+                        <Button.Template>
+                            <ControlTemplate>
+                                <Image x:Name="minusImg" Source="icons/minus.png"></Image>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                        <Setter TargetName="minusImg" Property="Source" Value="icons/minus_pressed.png"></Setter>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
                     <Button x:Name="buttonPlaylistSongAdd" Content="Add songs..." HorizontalAlignment="Left" Margin="161,0,0,0" VerticalAlignment="Top" Width="84" Height="30" Visibility="Hidden"/>
                     <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,0,0,0" VerticalAlignment="Top" Width="95" Height="30" Visibility="Hidden" Click="ButtonPlaylistSongRemove_Click"/>
                 </Grid>
@@ -117,7 +178,7 @@
             </TabItem>
         </TabControl>
         <GroupBox x:Name="groupBoxButtons" Grid.ColumnSpan="2" Header="" Margin="0,395,0,-1" BorderThickness="0" HorizontalAlignment="Left" Width="315" Height="60" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal" Margin="-5,-15,-7,-7" Height="75" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Margin="-5,-22,-7,-12" Height="72" VerticalAlignment="Center">
                 <CheckBox x:Name="checkRandom" Style="{StaticResource random}" HorizontalAlignment="Left" Margin="7,21,40,24" Width="73" VerticalAlignment="Center"/>
                 <Button x:Name="buttonPrev" Margin="-19,21,0,19" Click="ButtonPrev_Click" PreviewMouseDown="ButtonPrev_MouseDown" PreviewMouseUp="ButtonPrev_MouseUp" HorizontalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Width="40">
                     <Button.Template>
@@ -149,7 +210,18 @@
                 <CheckBox x:Name="checkRepeat" Style="{StaticResource repeat}" Width="32" Margin="0,0,0,19" HorizontalAlignment="Right" Height="35" VerticalAlignment="Bottom"/>
             </StackPanel>
         </GroupBox>
-        <Button x:Name="buttonAlbBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="74" Visibility="Hidden" Click="ButtonAlbBack_Click"/>
+        <Button x:Name="buttonAlbBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="74" Visibility="Hidden" Click="ButtonAlbBack_Click">
+            <Button.Template>
+                <ControlTemplate>
+                    <Image x:Name="backImg" Source="icons/back.png"></Image>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseDirectlyOver" Value="True">
+                            <Setter TargetName="backImg" Property="Source" Value="icons/back_pressed.png"></Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
         <Button x:Name="buttonPlaylistBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="70" Visibility="Hidden" Click="ButtonPlaylistBack_Click_1"/>
         <ComboBox x:Name="comboBoxNetworks" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="25" Margin="280,55,0,0" VerticalAlignment="Top" Width="25" BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Visibility="Hidden">
             <ComboBox.LayoutTransform>
@@ -190,6 +262,15 @@
             </ComboBoxItem>
         </ComboBox>
         <WebBrowser x:Name="comboTwBrowser"/>
+        <Menu x:Name="Menu" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="25" Margin="5,0,0,0" VerticalAlignment="Top" Width="30" Background="{x:Null}" Foreground="{x:Null}">
+            <MenuItem x:Name="Settings" IsEnabled="True" Height="25" Width="25" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{DynamicResource {x:Static SystemColors.ActiveCaptionTextBrushKey}}">
+                <MenuItem x:Name="addFiles" Header="Add files..."/>
+                <MenuItem x:Name="exit" Header="Exit"/>
+                <MenuItem.Icon>
+                    <Image Source="icons/menu.png" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-5,-5,-9,-4" Width="30" Height="25"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </Menu>
 
     </Grid>
 </Window>

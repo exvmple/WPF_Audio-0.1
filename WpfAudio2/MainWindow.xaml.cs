@@ -22,6 +22,7 @@ using System.Windows.Shapes;
 using System.Net;
 using System.Windows.Media.Effects;
 using System.Windows.Data;
+using System.Collections.ObjectModel;
 
 namespace WpfAudio2
 {
@@ -67,7 +68,7 @@ namespace WpfAudio2
         }
 
         public string Title { get => title; set => title = value; }
-        internal Artist Artist { get => artist; set => artist = value; }
+        public Artist Artist { get => artist; set => artist = value; }
         internal List<Song> Songs { get => songs; set => songs = value; }
         internal Cover Cover { get => cover; set => cover = value; }
 
@@ -150,8 +151,11 @@ namespace WpfAudio2
         static Cover blank = new Cover("no.png", System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\"));
         static Artist unknown = new Artist("(unknown)");
         Album untitled = new Album("(untitled)", unknown, blank);
+        
 
-        internal List<Song> Songs { get => songs; set => songs = value; }
+        public List<Song> Songs { get { return songs; } set { songs = value; } }
+
+
         internal List<Album> Albums { get => albums; set => albums = value; }
         internal List<Playlist> Playlists { get => playlists; set => playlists = value; }
 
@@ -167,7 +171,17 @@ namespace WpfAudio2
 
         public int GetSingleSong(string dir, string musicFile)
         {
-            var mp3File = TagLib.File.Create(System.IO.Path.Combine(dir, musicFile));
+            TagLib.File mp3File = null;
+            try
+            {
+                mp3File = TagLib.File.Create(System.IO.Path.Combine(dir, musicFile));
+            }
+            catch(TagLib.CorruptFileException ex)
+            {
+                MessageBox.Show("Corrupt file " + musicFile);
+                return -1;
+            }
+            
 
             Artist tempArtist;
             Album tempAlbum;
@@ -198,22 +212,28 @@ namespace WpfAudio2
             }
             else
             {
-                Artist tempSongSearch = artists.Find(x => x.Name == mp3File.Tag.Performers[0]);
-                if (tempSongSearch == null)
+                if(mp3File.Tag.Performers.Length>0)
                 {
-                    tempArtist = new Artist(mp3File.Tag.Performers[0]);
-                    artists.Add(tempArtist);
+                    Artist tempSongSearch = artists.Find(x => x.Name == mp3File.Tag.Performers[0]);
+                    if (tempSongSearch == null)
+                    {
+                        tempArtist = new Artist(mp3File.Tag.Performers[0]);
+                        artists.Add(tempArtist);
+                    }
+                    else
+                    {
+                        tempArtist = tempSongSearch;
+                    }
                 }
                 else
                 {
-                    tempArtist = tempSongSearch;
+                    tempArtist = unknown;
                 }
 
                 Album tempAlbumSearch = albums.Find(x => x.Title == mp3File.Tag.Album && tempArtist.Name == x.Artist.Name);
 
                 if (tempAlbumSearch == null)
                 {
-
                     string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
                     if (covers.Length > 0)
                     {
@@ -256,7 +276,7 @@ namespace WpfAudio2
         int selectedPlaylist = -1;
         int ffstatus = -1;
         string defdir = @"D:\C#\repos\Tragic City";
-        ProgramData data = new ProgramData();
+        public ProgramData data = new ProgramData();
         Song currentSong;
         Random random = new Random();
         List<Song> currentSource = new List<Song>();
@@ -269,6 +289,7 @@ namespace WpfAudio2
         {
             InitializeComponent();
             data.GetSongs(defdir);
+            this.DataContext = data;
             FillBoxes();
             listBoxSongs.SelectedIndex = 0;
 
@@ -284,6 +305,8 @@ namespace WpfAudio2
             player.PlayStateChange += Player_PlayStateChange;
 
             DoWorkAsyncInfiniteLoop();
+
+            
 
         }
 
@@ -343,17 +366,16 @@ namespace WpfAudio2
         void FillBoxes()
         {
             listBoxSongs.ItemsSource = data.Songs;
-            listBoxSongs.DisplayMemberPath = "Whole";
 
 
             listBoxAlbums.ItemsSource = data.Albums;
-            listBoxAlbums.DisplayMemberPath = "Whole";
+            //listBoxAlbums.DisplayMemberPath = "Whole";
 
             listBoxPlaylists.ItemsSource = data.Playlists;
             listBoxPlaylists.DisplayMemberPath = "Title";
 
             currentSong = data.Songs[0] as Song;
-            currentSource = data.Songs;
+            currentSource = data.Songs as List<Song>;
             UpdatePlayer(currentSong);
 
         }
@@ -565,7 +587,7 @@ namespace WpfAudio2
                     listBoxAlbums.ItemsSource = null;
 
                     listBoxAlbums.ItemsSource = data.Albums[temp].Songs;
-                    listBoxAlbums.DisplayMemberPath = "Title";
+                    //listBoxAlbums.DisplayMemberPath = "Title";
 
 
                     buttonAlbBack.Visibility = Visibility.Visible;
@@ -588,7 +610,7 @@ namespace WpfAudio2
         {
             listBoxAlbums.ItemsSource = null;
             listBoxAlbums.ItemsSource = data.Albums;
-            listBoxAlbums.DisplayMemberPath = "Title";
+            //listBoxAlbums.DisplayMemberPath = "Title";
             albumsStatus = false;
 
             buttonAlbBack.Visibility = Visibility.Hidden;
@@ -1069,9 +1091,13 @@ namespace WpfAudio2
 
                 foreach (var file in files)
                 {
-                    string tempFolder = file.Substring(0, file.LastIndexOf(@"\"));
                     
-                    data.GetSingleSong(tempFolder, file);
+                    if (file.Substring(file.LastIndexOf('.')+1)=="mp3")
+                    {
+                        string tempFolder = file.Substring(0, file.LastIndexOf(@"\"));
+
+                        data.GetSingleSong(tempFolder, file);
+                    }
                 }
 
                 listBoxSongs.Items.Refresh();
@@ -1148,17 +1174,42 @@ namespace WpfAudio2
             if(albumsStatus == false)
             {
                 Album album = listBoxAlbums.SelectedItem as Album;
-                
-                listBoxAlbums.Background = new ImageBrush(new BitmapImage(new Uri(album.Cover.Whole, UriKind.Relative)))
-                {
-                    Opacity = 0.25,
-                    TileMode = TileMode.None,
-                    Stretch = Stretch.UniformToFill,
-                   
-                };
-
+                updateBack(album);
             }
             
+        }
+
+        private void updateBack(Album album)
+        {
+
+            listBoxAlbums.Background = new ImageBrush(new BitmapImage(new Uri(album.Cover.Whole, UriKind.Relative)))
+            {
+                Opacity = 0.25,
+                TileMode = TileMode.None,
+                Stretch = Stretch.UniformToFill,
+
+            };
+        }
+
+        private void goToAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            TabAlbums.IsSelected = true;
+            albumsStatus = true;
+
+            listBoxAlbums.ItemsSource = null;
+
+            Song song = (Song)listBoxSongs.SelectedItem;
+            int index = data.Albums.IndexOf(song.Album);
+           
+            
+
+            listBoxAlbums.ItemsSource = data.Albums[index].Songs;
+            listBoxAlbums.DisplayMemberPath = "Title";
+
+            updateBack(song.Album);
+
+
+            buttonAlbBack.Visibility = Visibility.Visible;
         }
     }
 }

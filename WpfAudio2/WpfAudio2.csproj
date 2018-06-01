@@ -252,5 +252,19 @@
   <ItemGroup>
     <Resource Include="icons\lyrics_pressed.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\back.png" />
+    <Resource Include="icons\back_pressed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\minus.png" />
+    <Resource Include="icons\minus_pressed.png" />
+    <Resource Include="icons\plus.png" />
+    <Resource Include="icons\plus_pressed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\menu.png" />
+    <Resource Include="icons\menu_pressed.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
