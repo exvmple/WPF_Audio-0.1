@@ -223,7 +223,34 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="back.jpg" />
+    <Resource Include="icons\next.png" />
+    <Resource Include="icons\next_pressed.png" />
+    <Resource Include="icons\pause.png" />
+    <Resource Include="icons\pause_pressed.png" />
+    <Resource Include="icons\play.png" />
+    <Resource Include="icons\play_pressed.png" />
+    <Resource Include="icons\prev.png" />
+    <Resource Include="icons\prev_pressed.png" />
+    <Resource Include="icons\random.png" />
+    <Resource Include="icons\random_on.png" />
+    <Resource Include="icons\repeat.png" />
+    <Resource Include="icons\repeat_on.png" />
     <Resource Include="no.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\twitter.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\twitter_pressed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\lyrics.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\lyrics_pressed.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -21,6 +21,7 @@ using System.Web;
 using System.Windows.Shapes;
 using System.Net;
 using System.Windows.Media.Effects;
+using System.Windows.Data;
 
 namespace WpfAudio2
 {
@@ -37,6 +38,8 @@ namespace WpfAudio2
 
         public string Filename { get => filename; set => filename = value; }
         public string Dir { get => dir; set => dir = value; }
+
+        public string Whole { get => System.IO.Path.Combine(dir,filename); }
     }
     public class Artist
     {
@@ -176,7 +179,6 @@ namespace WpfAudio2
 
             if (mp3File.Tag.Performers == null || mp3File.Tag.Title == null || mp3File.Tag.Album == null)
             {
-                MessageBox.Show(untitled.Cover.Dir);
                 if (!unsCreated)
                 {
                     artists.Add(unknown);
@@ -350,6 +352,10 @@ namespace WpfAudio2
             listBoxPlaylists.ItemsSource = data.Playlists;
             listBoxPlaylists.DisplayMemberPath = "Title";
 
+            currentSong = data.Songs[0] as Song;
+            currentSource = data.Songs;
+            UpdatePlayer(currentSong);
+
         }
 
 
@@ -441,6 +447,7 @@ namespace WpfAudio2
 
                 comboBoxNetworks.Visibility = Visibility.Visible;
             }
+            
 
         }
 
@@ -497,10 +504,14 @@ namespace WpfAudio2
         {
             if (player.playState == WMPPlayState.wmppsUndefined)
             {
+                if(currentSong!=null)
+                {
+                    player.URL = currentSong.Directory;
+                }
                 if (player.URL != null)
                 {
                     player.controls.play();
-                    buttonPlayPause.Content = "Pause";
+                    buttonPlayPause.Content = FindResource("Pause");
                 }
             }
             else
@@ -508,14 +519,14 @@ namespace WpfAudio2
                 if (player.playState == WMPPlayState.wmppsPlaying)
                 {
                     player.controls.pause();
-                    buttonPlayPause.Content = "Play";
+                    buttonPlayPause.Content = FindResource("Play");
                 }
                 else
                 {
                     if (player.playState == WMPPlayState.wmppsPaused)
                     {
                         player.controls.play();
-                        buttonPlayPause.Content = "Pause";
+                        buttonPlayPause.Content = FindResource("Pause");
                     }
                 }
 
@@ -536,14 +547,10 @@ namespace WpfAudio2
                 currentSource = data.Songs;
                 player.URL = data.Songs[listBoxSongs.SelectedIndex].Directory;
                 player.controls.play();
-                buttonPlayPause.Content = "Pause";
+                buttonPlayPause.Content = FindResource("Pause");
             }
         }
-
-        private void ListBoxAlbums_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
+        
 
         private void ListBoxAlbums_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -551,6 +558,8 @@ namespace WpfAudio2
             {
                 if (albumsStatus == false)
                 {
+
+                    albumsStatus = true;
                     temp = listBoxAlbums.SelectedIndex;
 
                     listBoxAlbums.ItemsSource = null;
@@ -558,7 +567,6 @@ namespace WpfAudio2
                     listBoxAlbums.ItemsSource = data.Albums[temp].Songs;
                     listBoxAlbums.DisplayMemberPath = "Title";
 
-                    albumsStatus = true;
 
                     buttonAlbBack.Visibility = Visibility.Visible;
 
@@ -569,7 +577,7 @@ namespace WpfAudio2
                     currentSource = data.Albums[temp].Songs;
                     player.URL = data.Albums[temp].Songs[listBoxAlbums.SelectedIndex].Directory;
                     player.controls.play();
-                    buttonPlayPause.Content = "Pause";
+                    buttonPlayPause.Content = FindResource("Pause");
                 }
             }
 
@@ -660,7 +668,7 @@ namespace WpfAudio2
                     currentSource = data.Playlists[temp].Songs;
                     player.URL = data.Playlists[temp].Songs[listBoxPlaylists.SelectedIndex].Directory;
                     player.controls.play();
-                    buttonPlayPause.Content = "Pause";
+                    buttonPlayPause.Content = FindResource("Pause");
                 }
             }
         }
@@ -820,8 +828,9 @@ namespace WpfAudio2
                 TimeSpan dur = TimeSpan.ParseExact(currentSong.Duration, "mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
                 TimeSpan cur = TimeSpan.FromSeconds(player.controls.currentPosition);
 
-
+                textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
                 textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
+                
             }
             else
             {
@@ -867,7 +876,7 @@ namespace WpfAudio2
                 }
                 player.URL = currentSong.Directory;
                 player.controls.play();
-                buttonPlayPause.Content = "Pause";
+                buttonPlayPause.Content = FindResource("Pause");
 
                 UpdatePlayer(currentSong);
 
@@ -879,7 +888,7 @@ namespace WpfAudio2
                     currentSong = currentSource[0];
                     player.URL = currentSong.Directory;
                     player.controls.play();
-                    buttonPlayPause.Content = "Pause";
+                    buttonPlayPause.Content = FindResource("Pause");
 
                     UpdatePlayer(currentSong);
 
@@ -891,6 +900,7 @@ namespace WpfAudio2
         {
             if (currentSong != null)
             {
+                
                 if (checkRepeat.IsChecked != true)
                 {
                     int temp = currentSource.IndexOf(currentSong);
@@ -922,7 +932,7 @@ namespace WpfAudio2
                 }
                 player.URL = currentSong.Directory;
                 player.controls.play();
-                buttonPlayPause.Content = "Pause";
+                buttonPlayPause.Content = FindResource("Pause");
 
                 UpdatePlayer(currentSong);
 
@@ -931,12 +941,14 @@ namespace WpfAudio2
 
         private void ButtonPrev_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+           
             timer.Enabled = true;
             ffstatus = 0;
         }
         private void ButtonPrev_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             timer.Enabled = false;
+           
         }
 
         private void ButtonNext_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -947,6 +959,7 @@ namespace WpfAudio2
         private void ButtonNext_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             timer.Enabled = false;
+          
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -1114,8 +1127,15 @@ namespace WpfAudio2
                             temp.Album.Songs.Remove(temp);
                         }
 
+                        if(temp.Album.Songs.Count==0)
+                        {
+                            data.Albums.Remove(temp.Album);
+                            listBoxAlbums.Items.Refresh();
+                        }
+
                         data.Songs.Remove(temp);
                         listBoxSongs.Items.Refresh();
+
                     } 
                 }
             }
@@ -1125,6 +1145,19 @@ namespace WpfAudio2
 
         private void listBoxAlbums_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
         {
+            if(albumsStatus == false)
+            {
+                Album album = listBoxAlbums.SelectedItem as Album;
+                
+                listBoxAlbums.Background = new ImageBrush(new BitmapImage(new Uri(album.Cover.Whole, UriKind.Relative)))
+                {
+                    Opacity = 0.25,
+                    TileMode = TileMode.None,
+                    Stretch = Stretch.UniformToFill,
+                   
+                };
+
+            }
             
         }
     }

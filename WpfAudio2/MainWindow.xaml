@@ -7,7 +7,63 @@
         xmlns:my="clr-namespace:System.ComponentModel;assembly=System"
         mc:Ignorable="d"
         Title="MainWindow" Height="486" Width="323" ResizeMode="NoResize">
-    <Grid Margin="0,0,0,3">
+    <Window.Resources>
+        <Image x:Key="PrevPressed" Source="icons/prev_pressed.png" Width="30"/>
+        <Image x:Key="NextPressed" Source="icons/next_pressed.png" Width="30"/>
+        <Image x:Key="Play" Source="icons/play.png" Width="30"/>
+        <Image x:Key="Pause" Source="icons/pause.png" Width="30"/>
+        <Image x:Key="Prev" Source="icons/prev.png" Width="30"/>
+        <Image x:Key="Next" Source="icons/next.png" Width="30" IsHitTestVisible="True"/>
+        <Image x:Key="Random" Source="icons/random.png" Width="30"/>
+        <Image x:Key="RandomOn" Source="icons/random_on.png" Width="30"/>
+        <Image x:Key="Repeat" Source="icons/repeat.png" Width="40"/>
+        <Image x:Key="RepeatOn" Source="icons/repeat_on.png" Width="30"/>
+
+        <Style TargetType="{x:Type ListBox}" x:Key="songs">
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="FontWeight" Value="Thin"/>
+            <Setter Property="Padding" Value="2"/>
+        </Style>
+        
+        <Style TargetType="{x:Type CheckBox}" x:Key="random">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image x:Name="checkboxImage" Source="icons/random.png" Width="32"/>
+                            <ContentPresenter/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkboxImage" Property="Source" Value="icons/random_on.png"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type CheckBox}" x:Key="repeat">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image x:Name="checkboxImage" Source="icons/repeat.png" Width="32"/>
+                            <ContentPresenter/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkboxImage" Property="Source" Value="icons/repeat_on.png"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+    </Window.Resources>
+    <Grid Margin="0,0,0,3" Background="{DynamicResource {x:Static SystemParameters.WindowGlassBrush}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>
             <ColumnDefinition/>
@@ -15,7 +71,7 @@
         <TabControl x:Name="tabControl" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="435" Margin="0,25,-3,-6" VerticalAlignment="Top" Width="320" SelectionChanged="TabControl_SelectionChanged" RenderTransformOrigin="0.5,0.5">
             <TabItem x:Name="TabSongs" Header="Songs" Width="70" BorderBrush="#FFACACAC" HorizontalAlignment="Left" Margin="0" AllowDrop="True">
                 <Grid Background="#FFE5E5E5" Margin="0,0,76,96">
-                    <ListBox x:Name="listBoxSongs" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="ListBoxSongs_SelectionChanged" MouseDoubleClick="ListBoxSongs_MouseDoubleClick" MouseRightButtonDown="ListBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305" Drop="ListBoxSongs_Drop">
+                    <ListBox x:Name="listBoxSongs" Style="{StaticResource songs}" Height="375" VerticalAlignment="Top" Margin="1,0,-68,-39" SelectionChanged="ListBoxSongs_SelectionChanged" MouseDoubleClick="ListBoxSongs_MouseDoubleClick" MouseRightButtonDown="ListBoxSongs_MouseRightButtonDown" ScrollViewer.PanningMode="VerticalOnly" SelectionMode="Extended" HorizontalAlignment="Left" Width="305" Drop="ListBoxSongs_Drop">
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem x:Name="addToPlaylist" Header="Add to playlist" Click="AddToPlaylist_Click">
@@ -32,15 +88,12 @@
                         <ColumnDefinition Width="21*"/>
                         <ColumnDefinition Width="89*"/>
                     </Grid.ColumnDefinitions>
-                    <ListBox x:Name="listBoxAlbums" Margin="0,0,-97,-32" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended" Height="340" VerticalAlignment="Top" Grid.ColumnSpan="2" SelectionChanged="listBoxAlbums_SelectionChanged_1">
+                    <ListBox x:Name="listBoxAlbums" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended" Height="340" VerticalAlignment="Top" Grid.ColumnSpan="2" SelectionChanged="listBoxAlbums_SelectionChanged_1">
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem x:Name="addToPlaylistfromAlb" Header="Add to playlist" Click="AddToPlaylistfromAlb_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
-                        <ListBox.Background>
-                            <ImageBrush ImageSource="back.jpg" Opacity="0.4"></ImageBrush>
-                        </ListBox.Background>
                     </ListBox>
                 </Grid>
             </TabItem>
@@ -65,16 +118,40 @@
         </TabControl>
         <GroupBox x:Name="groupBoxButtons" Grid.ColumnSpan="2" Header="" Margin="0,395,0,-1" BorderThickness="0" HorizontalAlignment="Left" Width="315" Height="60" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" Margin="-5,-15,-7,-7" Height="75" VerticalAlignment="Center">
-                <CheckBox x:Name="checkRandom" Content="Random" HorizontalAlignment="Left" Margin="3,21,31,24" Width="69" VerticalAlignment="Center"/>
-                <Button x:Name="buttonPrev" Content="Prev" Width="40" Margin="-19,21,0,24" Click="ButtonPrev_Click" PreviewMouseDown="ButtonPrev_MouseDown" PreviewMouseUp="ButtonPrev_MouseUp" HorizontalAlignment="Center"/>
-                <Button x:Name="buttonPlayPause" Content="Play" Width="60" HorizontalAlignment="Center" Click="ButtonPlayPause_Click" Margin="0,21,0,24"/>
-                <Button x:Name="buttonNext" Content="Next" Width="40" Margin="0,21,32,24" Click="ButtonNext_Click" PreviewMouseDown="ButtonNext_MouseDown" PreviewMouseUp="ButtonNext_PreviewMouseUp" HorizontalAlignment="Center"/>
-                <CheckBox x:Name="checkRepeat" Content="Repeat" Width="58" Margin="-11,0,0,32" HorizontalAlignment="Right" Height="15" VerticalAlignment="Bottom"/>
+                <CheckBox x:Name="checkRandom" Style="{StaticResource random}" HorizontalAlignment="Left" Margin="7,21,40,24" Width="73" VerticalAlignment="Center"/>
+                <Button x:Name="buttonPrev" Margin="-19,21,0,19" Click="ButtonPrev_Click" PreviewMouseDown="ButtonPrev_MouseDown" PreviewMouseUp="ButtonPrev_MouseUp" HorizontalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Width="40">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Image x:Name="prevImg" Source="icons/prev.png"></Image>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                    <Setter TargetName="prevImg" Property="Source" Value="icons/prev_pressed.png"></Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button x:Name="buttonPlayPause" HorizontalAlignment="Center" Click="ButtonPlayPause_Click" Margin="0,21,0,19" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Width="40">
+                    <DynamicResource ResourceKey="Play"></DynamicResource>
+                </Button>
+                <Button x:Name="buttonNext" Margin="0,21,54,19" Click="ButtonNext_Click" PreviewMouseDown="ButtonNext_MouseDown" PreviewMouseUp="ButtonNext_PreviewMouseUp" HorizontalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Width="40">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Image x:Name="nextImg" Source="icons/next.png"></Image>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                    <Setter TargetName="nextImg" Property="Source" Value="icons/next_pressed.png"></Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <CheckBox x:Name="checkRepeat" Style="{StaticResource repeat}" Width="32" Margin="0,0,0,19" HorizontalAlignment="Right" Height="35" VerticalAlignment="Bottom"/>
             </StackPanel>
         </GroupBox>
         <Button x:Name="buttonAlbBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="74" Visibility="Hidden" Click="ButtonAlbBack_Click"/>
         <Button x:Name="buttonPlaylistBack" Grid.ColumnSpan="2" Content="&lt;-" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="70" Visibility="Hidden" Click="ButtonPlaylistBack_Click_1"/>
-        <ComboBox x:Name="comboBoxNetworks" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="25" Margin="280,55,0,0" VerticalAlignment="Top" Width="25" Visibility="Hidden">
+        <ComboBox x:Name="comboBoxNetworks" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="25" Margin="280,55,0,0" VerticalAlignment="Top" Width="25" BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Visibility="Hidden">
             <ComboBox.LayoutTransform>
                 <RotateTransform Angle="270" />
             </ComboBox.LayoutTransform>
@@ -87,8 +164,30 @@
                     </Setter>
                 </Style>
             </ComboBox.ItemContainerStyle>
-            <ComboBoxItem x:Name="comboInstagram" Content="IG" Selected="ComboInstagram_Selected"/>
-            <ComboBoxItem x:Name="comboTwitter" Content="TW" Selected="ComboTwitter_Selected"/>
+            <ComboBoxItem x:Name="comboInstagram" Content="IG" Selected="ComboInstagram_Selected">
+                <ComboBoxItem.Template>
+                    <ControlTemplate>
+                        <Image Name="lyrImg" Source="icons/lyrics.png" Width="25"></Image>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                <Setter TargetName="lyrImg" Property="Source" Value="icons/lyrics_pressed.png"></Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </ComboBoxItem.Template>
+            </ComboBoxItem>
+            <ComboBoxItem x:Name="comboTwitter" Selected="ComboTwitter_Selected">
+                <ComboBoxItem.Template>
+                    <ControlTemplate>
+                        <Image Name="twiImg" Source="icons/twitter.png" Width="25"></Image>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                <Setter TargetName="twiImg" Property="Source" Value="icons/twitter_pressed.png"></Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </ComboBoxItem.Template>
+            </ComboBoxItem>
         </ComboBox>
         <WebBrowser x:Name="comboTwBrowser"/>
 
