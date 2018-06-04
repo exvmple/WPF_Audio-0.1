@@ -1,28 +1,19 @@
 ﻿using System.Collections.Generic;
-//using System.Windows.Shapes;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using WMPLib;
-using TagLib;
 using System.Windows.Media.Imaging;
 using System;
 using System.Threading.Tasks;
-using System.Threading;
-using System.Resources;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Controls.Primitives;
 using System.Timers;
-using System.Drawing;
 using System.Windows.Media;
 using System.Web;
-using System.Windows.Shapes;
 using System.Net;
 using System.Windows.Media.Effects;
-using System.Windows.Data;
-using System.Collections.ObjectModel;
+using HtmlAgilityPack;
 
 namespace WpfAudio2
 {
@@ -70,7 +61,7 @@ namespace WpfAudio2
         public string Title { get => title; set => title = value; }
         public Artist Artist { get => artist; set => artist = value; }
         internal List<Song> Songs { get => songs; set => songs = value; }
-        internal Cover Cover { get => cover; set => cover = value; }
+        public Cover Cover { get => cover; set => cover = value; }
 
         public string Whole
         {
@@ -138,6 +129,7 @@ namespace WpfAudio2
 
         public string Title { get => title; set => title = value; }
         public List<Song> Songs { get => playlist; set => playlist = value; }
+        public int Count { get => this.playlist.Count; }
     }
 
     public class ProgramData
@@ -161,7 +153,8 @@ namespace WpfAudio2
 
         public void GetSongs(string dir)
         {
-            string[] musicFiles = Directory.GetFiles(dir, "*.mp3", SearchOption.AllDirectories);
+            var musicFiles = Directory.EnumerateFiles(dir, "*.*", SearchOption.AllDirectories)
+             .Where(s => s.EndsWith(".mp3") || s.EndsWith(".m4a"));
 
             foreach (string musicFile in musicFiles)
             {
@@ -176,7 +169,7 @@ namespace WpfAudio2
             {
                 mp3File = TagLib.File.Create(System.IO.Path.Combine(dir, musicFile));
             }
-            catch(TagLib.CorruptFileException ex)
+            catch(TagLib.CorruptFileException)
             {
                 MessageBox.Show("Corrupt file " + musicFile);
                 return -1;
@@ -234,7 +227,8 @@ namespace WpfAudio2
 
                 if (tempAlbumSearch == null)
                 {
-                    string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
+                    string[] covers = Directory.GetFiles(tempFolder, "*ver.jpg");
+                    
                     if (covers.Length > 0)
                     {
                         tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0], dir));
@@ -277,13 +271,14 @@ namespace WpfAudio2
         int ffstatus = -1;
         string defdir = @"D:\C#\repos\Tragic City";
         public ProgramData data = new ProgramData();
-        Song currentSong;
+        public Song currentSong;
         Random random = new Random();
         List<Song> currentSource = new List<Song>();
         public delegate bool Predicate<in Song>(Song obj);
         WMPLib.WindowsMediaPlayer player = new WMPLib.WindowsMediaPlayer();
         private static System.Timers.Timer timer;
         private static System.Timers.Timer nTimer;
+
 
         public MainWindow()
         {
@@ -365,6 +360,9 @@ namespace WpfAudio2
 
         void FillBoxes()
         {
+            currentSong = data.Songs[0] as Song;
+            currentSource = data.Songs as List<Song>;
+
             listBoxSongs.ItemsSource = data.Songs;
 
 
@@ -372,10 +370,9 @@ namespace WpfAudio2
             //listBoxAlbums.DisplayMemberPath = "Whole";
 
             listBoxPlaylists.ItemsSource = data.Playlists;
-            listBoxPlaylists.DisplayMemberPath = "Title";
+            //listBoxPlaylists.DisplayMemberPath = "Title";
 
-            currentSong = data.Songs[0] as Song;
-            currentSource = data.Songs as List<Song>;
+            
             UpdatePlayer(currentSong);
 
         }
@@ -404,7 +401,6 @@ namespace WpfAudio2
                     addToPlaylist.Items.Clear();
                     foreach (Playlist play in data.Playlists)
                     {
-
                         MenuItem mine = new MenuItem
                         {
                             Header = play.Title
@@ -414,6 +410,7 @@ namespace WpfAudio2
                         {
                             mine.Click += Mine_Click;
                             addToPlaylist.Items.Add(mine);
+                            listBoxPlaylists.Items.Refresh();
                         }
                     }
 
@@ -675,7 +672,7 @@ namespace WpfAudio2
                     listBoxPlaylists.ItemsSource = null;
 
                     listBoxPlaylists.ItemsSource = data.Playlists[temp].Songs;
-                    listBoxPlaylists.DisplayMemberPath = "Title";
+                    //listBoxPlaylists.DisplayMemberPath = "Title";
 
                     selectedPlaylist = temp;
 
@@ -725,7 +722,7 @@ namespace WpfAudio2
         {
             listBoxPlaylists.ItemsSource = null;
             listBoxPlaylists.ItemsSource = data.Playlists;
-            listBoxPlaylists.DisplayMemberPath = "Title";
+            //listBoxPlaylists.DisplayMemberPath = "Title";
 
             playlistStatus = false;
 
@@ -831,19 +828,31 @@ namespace WpfAudio2
             }
         }
 
+        private BitmapImage ImageFromStream(Stream stream)
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.StreamSource = stream;
+            image.EndInit();
+            return image;
+        }
+
+
         private void UpdatePlayer(Song currentSong)
         {
             if (currentSong != null)
             {
                 tabPlayerPic.Source = new BitmapImage(new System.Uri(System.IO.Path.Combine(currentSong.Album.Cover.Dir, currentSong.Album.Cover.Filename)));
 
-                if (currentSong.Artist.Name != "(unknown)")
+                if (currentSong.Artist.Name != "(unknown)" && currentSong.Album.Title!= "(untitled)")
                 {
-                    textBlockSongInfo.Text = currentSong.Title + " \n" + currentSong.Artist.Name + " - " + currentSong.Album.Title;
+                    textBlockSongInfo.Text = currentSong.Artist.Name + " - " + currentSong.Album.Title;
+                    textBlockSongTitle.Text = currentSong.Title;
                 }
                 else
                 {
                     textBlockSongInfo.Text = currentSong.Title;
+                    textBlockSongTitle.Text = "";
                 }
 
 
@@ -853,6 +862,9 @@ namespace WpfAudio2
                 textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
                 textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
                 
+                blurBack.Source = new BitmapImage(new System.Uri(System.IO.Path.Combine(currentSong.Album.Cover.Dir, currentSong.Album.Cover.Filename)));
+
+
             }
             else
             {
@@ -1016,15 +1028,10 @@ namespace WpfAudio2
 
         private void ComboInstagram_Selected(object sender, RoutedEventArgs e)
         {
-            RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap((int)Width + 1, (int)Height, 96, 96, PixelFormats.Pbgra32);
-            renderTargetBitmap.Render(this);
-            PngBitmapEncoder pngImage = new PngBitmapEncoder();
-            pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
-            Stream fileStream = System.IO.File.Create("temp.jpg");
-            pngImage.Save(fileStream);
-
-            comboInstagram.IsSelected = false;
-
+            if(currentSong!=null)
+            {
+              
+            }
         }
         public static bool CheckForInternetConnection()
         {
@@ -1181,7 +1188,6 @@ namespace WpfAudio2
 
         private void updateBack(Album album)
         {
-
             listBoxAlbums.Background = new ImageBrush(new BitmapImage(new Uri(album.Cover.Whole, UriKind.Relative)))
             {
                 Opacity = 0.25,
@@ -1210,6 +1216,20 @@ namespace WpfAudio2
 
 
             buttonAlbBack.Visibility = Visibility.Visible;
+        }
+
+        private void addFiles_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+
+                data.GetSongs(dialog.SelectedPath);
+
+                listBoxAlbums.Items.Refresh();
+                listBoxSongs.Items.Refresh();
+            }
+            
         }
     }
 }

@@ -37,6 +37,9 @@
     <Reference Include="Auth0.OidcClient, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Auth0.OidcClient.WPF.1.2.0\lib\net452\Auth0.OidcClient.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.8.4.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.8.4\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Id3, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ID3.0.3.0\lib\net40\Id3.dll</HintPath>
     </Reference>
@@ -126,6 +129,7 @@
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -265,6 +269,13 @@
   <ItemGroup>
     <Resource Include="icons\menu.png" />
     <Resource Include="icons\menu_pressed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\round.png" />
+    <Resource Include="icons\round_pressed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\back.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
