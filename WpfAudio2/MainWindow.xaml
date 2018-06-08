@@ -6,18 +6,20 @@
         xmlns:local="clr-namespace:WpfAudio2"
         xmlns:my="clr-namespace:System.ComponentModel;assembly=System"
         mc:Ignorable="d"
-        Title="MainWindow" Height="486" Width="323" ResizeMode="NoResize">
+        Title="MainWindow" Height="486" Width="323" ResizeMode="NoResize" Closing="Window_Closing">
     <Window.Resources>
+
         <Image x:Key="PrevPressed" Source="icons/prev_pressed.png" Width="30"/>
         <Image x:Key="NextPressed" Source="icons/next_pressed.png" Width="30"/>
         <Image x:Key="Play" Source="icons/play.png" Width="30"/>
         <Image x:Key="Pause" Source="icons/pause.png" Width="30"/>
         <Image x:Key="Prev" Source="icons/prev.png" Width="30"/>
         <Image x:Key="Next" Source="icons/next.png" Width="30" IsHitTestVisible="True"/>
-        <Image x:Key="Random" Source="icons/random.png" Width="30"/>
-        <Image x:Key="RandomOn" Source="icons/random_on.png" Width="30"/>
+        <Image x:Key="Random" Source="icons/random.png" Width="40"/>
+        <Image x:Key="RandomOn" Source="icons/random_on.png" Width="40"/>
         <Image x:Key="Repeat" Source="icons/repeat.png" Width="40"/>
         <Image x:Key="RepeatOn" Source="icons/repeat_on.png" Width="30"/>
+
 
         <Style TargetType="{x:Type ListBox}" x:Key="songs">
             <Setter Property="Margin" Value="2"/>
@@ -186,10 +188,11 @@
                         <ColumnDefinition Width="21*"/>
                         <ColumnDefinition Width="89*"/>
                     </Grid.ColumnDefinitions>
-                    <ListBox x:Name="listBoxAlbums" Style="{StaticResource songs}" ItemsSource="{Binding Path=data.Albums}" IsEnabled="{Binding Path=EnabledFlagInViewModel, TargetNullValue=false}" HorizontalAlignment="Left" Width="317" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended" Height="342" VerticalAlignment="Top" Grid.ColumnSpan="2" SelectionChanged="listBoxAlbums_SelectionChanged_1" Margin="2,0,-1,0">
+                    <ListBox x:Name="listBoxAlbums" Style="{StaticResource songs}" ItemsSource="{Binding Path=data.Albums}" IsEnabled="{Binding Path=EnabledFlagInViewModel, TargetNullValue=false}" MouseDoubleClick="ListBoxAlbums_MouseDoubleClick" SelectionMode="Extended" Height="365" VerticalAlignment="Top" Grid.ColumnSpan="2" SelectionChanged="listBoxAlbums_SelectionChanged_1" Margin="2,0,0,0">
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem x:Name="addToPlaylistfromAlb" Header="Add to playlist" Click="AddToPlaylistfromAlb_Click"/>
+                                <MenuItem x:Name="deleteAlbum" Header="Delete" Click="deleteAlbum_Click"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
                         <ListBox.Resources>
@@ -209,17 +212,20 @@
                             </DataTemplate>
                             <DataTemplate DataType="{x:Type local:Album}">
                                 <StackPanel Orientation="Vertical" Margin="2" Width="267">
-                                    <TextBlock Text="{Binding Path=Title}"/>
+                                    <TextBlock Text="{Binding Path=Title}" FontWeight="DemiBold"/>
                                     <TextBlock Text="{Binding Path=Artist.Name}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.Resources>
+                        <ListBox.Background>
+                            <ImageBrush ImageSource="icons/back.jpg" Opacity="0.1" Stretch="UniformToFill"/>
+                        </ListBox.Background>
                     </ListBox>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabPlaylists" Header="Playlists" Width="70" FontWeight="DemiBold" Margin="0,0,-30,-2" HorizontalAlignment="Right" Background="#FFE5E5E5"  BorderBrush="#FFACACAC">
-                <Grid Background= "#FFE5E5E5" Margin="0,0,1,99">
-                    <ListBox x:Name="listBoxPlaylists" Style="{StaticResource songs}" ItemsSource="{Binding Path=data.Playlists}" HorizontalAlignment="Left" Height="310" VerticalAlignment="Top" Width="312" Margin="0,30,0,-7" MouseDown="ListBoxPlaylists_MouseDown" MouseDoubleClick="ListBoxPlaylists_MouseDoubleClick">
+                <Grid Background= "#FFE5E5E5" Margin="0,0,1,63">
+                    <ListBox x:Name="listBoxPlaylists" Style="{StaticResource songs}" ItemsSource="{Binding Path=data.Playlists}" HorizontalAlignment="Left" Height="342" VerticalAlignment="Top" Width="312" Margin="0,30,0,-39" MouseDown="ListBoxPlaylists_MouseDown" MouseDoubleClick="ListBoxPlaylists_MouseDoubleClick">
                         <ListBox.Resources>
                             <DataTemplate DataType="{x:Type local:Song}">
                                 <StackPanel Orientation="Vertical" Margin="2" Width="267">
@@ -242,6 +248,9 @@
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.Resources>
+                        <ListBox.Background>
+                            <ImageBrush ImageSource="icons/back.jpg" Opacity="0.1" Stretch="UniformToFill"/>
+                        </ListBox.Background>
                     </ListBox>
                     <Button x:Name="buttonAddPlaylist" Content="+" HorizontalAlignment="Left" Margin="5,3,0,0" VerticalAlignment="Top" Width="30" Height="25" Click="ButtonAddPlaylist_Click">
                         <Button.Template>
@@ -267,22 +276,36 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                    <Button x:Name="buttonPlaylistSongAdd" Content="Add songs..." HorizontalAlignment="Left" Margin="161,0,0,0" VerticalAlignment="Top" Width="84" Height="30" Visibility="Hidden"/>
-                    <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,0,0,0" VerticalAlignment="Top" Width="95" Height="30" Visibility="Hidden" Click="ButtonPlaylistSongRemove_Click"/>
+                    <Button x:Name="buttonPlaylistSongRemove" Content="Remove" HorizontalAlignment="Left" Margin="245,5,0,0" VerticalAlignment="Top" Width="38" Height="20" Visibility="Visible" Click="ButtonPlaylistSongRemove_Click">
+                        <Button.Template>
+                            <ControlTemplate>
+                                <Image x:Name="plusImg" Source="icons/minus.png"></Image>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                        <Setter TargetName="plusImg" Property="Source" Value="icons/minus_pressed.png"></Setter>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
                 </Grid>
             </TabItem>
-            <TabItem x:Name="TabPlayer" Header="Player" AllowDrop="True" Drop="TabPlayer_Drop" FontWeight="DemiBold" Margin="30,0,-60,-2" RenderTransformOrigin="0.873,0.455" Background="#FFE5E5E5"  BorderBrush="#FFACACAC">
+            <TabItem x:Name="TabPlayer" Header="Player" AllowDrop="True" Drop="TabPlayer_Drop" FontWeight="DemiBold" Margin="30,0,-55,-2" RenderTransformOrigin="0.873,0.455" Background="#FFE5E5E5"  BorderBrush="#FFACACAC">
                 <Grid Margin="0,0,1,70" x:Name="GridPlay">
                     <Border Visibility="Visible">
                         <Border.Effect>
                             <BlurEffect Radius="5" KernelType="Gaussian"/>
                         </Border.Effect>
-                        <Image x:Name="blurBack" Width="410" Opacity="0.3" Stretch="UniformToFill" Margin="-48,0,-49,-73"/>
+                        <Image x:Name="blurBack" Width="410" Opacity="0.4" Stretch="UniformToFill" Margin="-58,0,-39,-73"/>
                     </Border>
-                    <Image x:Name="tabPlayerPic" Height="236" Margin="47,30,41,0" VerticalAlignment="Top"/>
+                    <Border Height="237" Width="237" BorderThickness="0.4" BorderBrush="Black" Margin="32,25,44,100" >
+                        <Image x:Name="tabPlayerPic" Opacity="1" Stretch="Uniform" Margin="2,2,2,2" VerticalAlignment="Top">
+                        </Image>
+                    </Border>
+
                     <TextBlock x:Name="textBlockSongTitle" HorizontalAlignment="Left" Height="20" Margin="7,285,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="275" FontSize="12" FontWeight="DemiBold"/>
                     <TextBlock x:Name="textBlockSongInfo" HorizontalAlignment="Left" Height="19" Margin="7,301,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="285" FontSize="12" FontWeight="Light" FontStyle="Italic"/>
-                    <Slider x:Name="sliderPosition" Style="{StaticResource Horizontal_Slider}" Thumb.DragCompleted="SliderPosition_DragCompleted" ValueChanged="SliderPosition_ValueChanged" Height="28" Margin="12,345,14,-11" Minimum="0" Maximum="100" RenderTransformOrigin="0.495,1.607"/>
+                    <Slider x:Name="sliderPosition" Style="{StaticResource Horizontal_Slider}" Thumb.DragCompleted="SliderPosition_DragCompleted" ValueChanged="SliderPosition_ValueChanged" Height="28" Margin="12,345,21,-11" Minimum="0" Maximum="100" RenderTransformOrigin="0.495,1.607"/>
 
                     <TextBlock x:Name="textBlockCurrentPos" HorizontalAlignment="Left" Margin="7,329,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" FontWeight="Thin" />
                     <TextBlock x:Name="textBlockDuration" HorizontalAlignment="Left" Margin="257,335,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" RenderTransformOrigin="-0.012,0.062" FontWeight="Thin" Width="53"/>
@@ -290,8 +313,8 @@
             </TabItem>
         </TabControl>
         <GroupBox x:Name="groupBoxButtons" Grid.ColumnSpan="3" Header="" Margin="0,395,0,-1" BorderThickness="0" HorizontalAlignment="Left" Width="315" Height="60" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal" Margin="-5,-22,-7,-12" Height="72" VerticalAlignment="Center">
-                <CheckBox x:Name="checkRandom" Style="{StaticResource random}" HorizontalAlignment="Left" Margin="7,21,40,24" Width="73" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" Margin="-5,-18,-7,-12" Height="68" VerticalAlignment="Center">
+                <CheckBox x:Name="checkRandom" Style="{StaticResource random}" HorizontalAlignment="Left" Margin="7,10,40,10" Width="73" VerticalAlignment="Center" Height="48"/>
                 <Button x:Name="buttonPrev" Margin="-19,21,0,19" Click="ButtonPrev_Click" PreviewMouseDown="ButtonPrev_MouseDown" PreviewMouseUp="ButtonPrev_MouseUp" HorizontalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Width="40">
                     <Button.Template>
                         <ControlTemplate>
@@ -346,7 +369,7 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <ComboBox x:Name="comboBoxNetworks" HorizontalAlignment="Left" Height="25" Margin="285,35,0,0" VerticalAlignment="Top" Width="25" BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Visibility="Visible" Grid.Column="2">
+        <ComboBox x:Name="comboBoxNetworks" HorizontalAlignment="Left" Height="25" Margin="285,35,0,0" VerticalAlignment="Top" Width="25" BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Visibility="Hidden" Grid.Column="2">
             <ComboBox.LayoutTransform>
                 <RotateTransform Angle="270" />
             </ComboBox.LayoutTransform>
@@ -379,7 +402,7 @@
                     <Image Source="icons/menu.png" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-5,-5,-9,-4" Width="30" Height="25"/>
                 </MenuItem.Icon>
                 <MenuItem x:Name="addFiles" Header="Add files..." Click="addFiles_Click"/>
-                <MenuItem x:Name="exit" Header="Exit"/>
+                <MenuItem x:Name="exit" Header="Exit" Click="exit_Click"/>
             </MenuItem>
         </Menu>
 

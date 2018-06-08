@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using WMPLib;
+using System.Drawing;
 using System.Windows.Media.Imaging;
 using System;
 using System.Threading.Tasks;
@@ -13,10 +14,12 @@ using System.Windows.Media;
 using System.Web;
 using System.Net;
 using System.Windows.Media.Effects;
-using HtmlAgilityPack;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Data;
 
 namespace WpfAudio2
 {
+    [Serializable]
     public class Cover
     {
         string filename;
@@ -33,6 +36,7 @@ namespace WpfAudio2
 
         public string Whole { get => System.IO.Path.Combine(dir,filename); }
     }
+    [Serializable]
     public class Artist
     {
         string name;
@@ -41,9 +45,10 @@ namespace WpfAudio2
             this.name = name;
         }
 
+
         public string Name { get => name; set => name = value; }
     }
-
+    [Serializable]
     public class Album
     {
         string title;
@@ -57,6 +62,7 @@ namespace WpfAudio2
             this.artist = artist;
             this.cover = cover;
         }
+
 
         public string Title { get => title; set => title = value; }
         public Artist Artist { get => artist; set => artist = value; }
@@ -78,6 +84,7 @@ namespace WpfAudio2
             }
         }
     }
+    [Serializable]
     public class Song
     {
         string duration;
@@ -94,6 +101,7 @@ namespace WpfAudio2
             directory = dir;
             Duration = time;
         }
+
 
         public string Duration { get => duration; set => duration = value; }
         public string Title { get => title; set => title = value; }
@@ -117,6 +125,7 @@ namespace WpfAudio2
         }
     }
 
+    [Serializable]
     class Playlist
     {
         string title;
@@ -127,11 +136,13 @@ namespace WpfAudio2
             Title = title;
         }
 
+
         public string Title { get => title; set => title = value; }
         public List<Song> Songs { get => playlist; set => playlist = value; }
         public int Count { get => this.playlist.Count; }
     }
 
+    [Serializable]
     public class ProgramData
     {
         List<Song> songs = new List<Song>();
@@ -162,6 +173,7 @@ namespace WpfAudio2
             }
         }
 
+
         public int GetSingleSong(string dir, string musicFile)
         {
             TagLib.File mp3File = null;
@@ -171,7 +183,7 @@ namespace WpfAudio2
             }
             catch(TagLib.CorruptFileException)
             {
-                MessageBox.Show("Corrupt file " + musicFile);
+                //MessageBox.Show("Corrupt file " + musicFile);
                 return -1;
             }
             
@@ -224,11 +236,10 @@ namespace WpfAudio2
                 }
 
                 Album tempAlbumSearch = albums.Find(x => x.Title == mp3File.Tag.Album && tempArtist.Name == x.Artist.Name);
-
                 if (tempAlbumSearch == null)
                 {
-                    string[] covers = Directory.GetFiles(tempFolder, "*ver.jpg");
-                    
+                    string[] covers = Directory.GetFiles(tempFolder, "*over.jpg");
+
                     if (covers.Length > 0)
                     {
                         tempAlbum = new Album(mp3File.Tag.Album, tempArtist, new Cover(covers[0], dir));
@@ -269,7 +280,6 @@ namespace WpfAudio2
         int temp = 0;
         int selectedPlaylist = -1;
         int ffstatus = -1;
-        string defdir = @"D:\C#\repos\Tragic City";
         public ProgramData data = new ProgramData();
         public Song currentSong;
         Random random = new Random();
@@ -283,7 +293,16 @@ namespace WpfAudio2
         public MainWindow()
         {
             InitializeComponent();
-            data.GetSongs(defdir);
+            if(File.Exists("data.dat"))
+            {
+                readVar();
+            }
+            else
+            {
+                MessageBox.Show("Please choose the folder with your media");
+                addFilesDial();
+            }
+            
             this.DataContext = data;
             FillBoxes();
             listBoxSongs.SelectedIndex = 0;
@@ -360,17 +379,19 @@ namespace WpfAudio2
 
         void FillBoxes()
         {
-            currentSong = data.Songs[0] as Song;
-            currentSource = data.Songs as List<Song>;
+            if(data.Songs.Count>0)
+            {
+                currentSong = data.Songs[0];
+                currentSource = data.Songs;
+            }
+            
 
             listBoxSongs.ItemsSource = data.Songs;
 
 
             listBoxAlbums.ItemsSource = data.Albums;
-            //listBoxAlbums.DisplayMemberPath = "Whole";
 
             listBoxPlaylists.ItemsSource = data.Playlists;
-            //listBoxPlaylists.DisplayMemberPath = "Title";
 
             
             UpdatePlayer(currentSong);
@@ -428,6 +449,8 @@ namespace WpfAudio2
             }
             else
             {
+                
+                
                 if (albumsStatus)
                 {
                     buttonAlbBack.Visibility = Visibility.Visible;
@@ -700,7 +723,6 @@ namespace WpfAudio2
                 buttonAddPlaylist.Visibility = Visibility.Hidden;
                 buttonRemovePlaylist.Visibility = Visibility.Hidden;
 
-                buttonPlaylistSongAdd.Visibility = Visibility.Visible;
                 buttonPlaylistSongRemove.Visibility = Visibility.Visible;
             }
             else
@@ -711,7 +733,6 @@ namespace WpfAudio2
                     buttonAddPlaylist.Visibility = Visibility.Visible;
                     buttonRemovePlaylist.Visibility = Visibility.Visible;
 
-                    buttonPlaylistSongAdd.Visibility = Visibility.Hidden;
                     buttonPlaylistSongRemove.Visibility = Visibility.Hidden;
                 }
             }
@@ -842,7 +863,9 @@ namespace WpfAudio2
         {
             if (currentSong != null)
             {
-                tabPlayerPic.Source = new BitmapImage(new System.Uri(System.IO.Path.Combine(currentSong.Album.Cover.Dir, currentSong.Album.Cover.Filename)));
+
+                tabPlayerPic.Source = new BitmapImage(new Uri(currentSong.Album.Cover.Whole, UriKind.Absolute));
+
 
                 if (currentSong.Artist.Name != "(unknown)" && currentSong.Album.Title!= "(untitled)")
                 {
@@ -862,7 +885,7 @@ namespace WpfAudio2
                 textBlockCurrentPos.Text = string.Format("{0:mm\\:ss}", cur);
                 textBlockDuration.Text = string.Format("{0:mm\\:ss}", dur);
                 
-                blurBack.Source = new BitmapImage(new System.Uri(System.IO.Path.Combine(currentSong.Album.Cover.Dir, currentSong.Album.Cover.Filename)));
+                blurBack.Source = new BitmapImage(new Uri(currentSong.Album.Cover.Whole, UriKind.Absolute));
 
 
             }
@@ -1153,21 +1176,25 @@ namespace WpfAudio2
                 {
                     if(listBoxSongs.SelectedItem != null)
                     {
-                        Song temp = (Song)listBoxSongs.SelectedItem;
 
-                        if (temp.Album != null)
+                        var selected = listBoxSongs.SelectedItems.Cast<Song>().ToArray();
+                        foreach (Song temp in selected)
                         {
-                            temp.Album.Songs.Remove(temp);
+                            if (temp.Album != null)
+                            {
+                                temp.Album.Songs.Remove(temp);
+                            }
+
+                            if (temp.Album.Songs.Count == 0)
+                            {
+                                data.Albums.Remove(temp.Album);
+                                listBoxAlbums.Items.Refresh();
+                            }
+
+                            data.Songs.Remove(temp);
+                            listBoxSongs.Items.Refresh();
                         }
 
-                        if(temp.Album.Songs.Count==0)
-                        {
-                            data.Albums.Remove(temp.Album);
-                            listBoxAlbums.Items.Refresh();
-                        }
-
-                        data.Songs.Remove(temp);
-                        listBoxSongs.Items.Refresh();
 
                     } 
                 }
@@ -1180,22 +1207,30 @@ namespace WpfAudio2
         {
             if(albumsStatus == false)
             {
-                Album album = listBoxAlbums.SelectedItem as Album;
-                updateBack(album);
+                if(listBoxAlbums.SelectedItem != null)
+                {
+                    Album album = listBoxAlbums.SelectedItem as Album;
+                    updateBack(album);
+                }
             }
             
         }
 
         private void updateBack(Album album)
         {
-            listBoxAlbums.Background = new ImageBrush(new BitmapImage(new Uri(album.Cover.Whole, UriKind.Relative)))
+            if(album!=null)
             {
-                Opacity = 0.25,
-                TileMode = TileMode.None,
-                Stretch = Stretch.UniformToFill,
+                listBoxAlbums.Background = new ImageBrush(new BitmapImage(new Uri(album.Cover.Whole, UriKind.Relative)))
+                {
+                    Opacity = 0.25,
+                    TileMode = TileMode.None,
+                    Stretch = Stretch.UniformToFill,
 
-            };
+                };
+            }
+           
         }
+
 
         private void goToAlbum_Click(object sender, RoutedEventArgs e)
         {
@@ -1220,16 +1255,141 @@ namespace WpfAudio2
 
         private void addFiles_Click(object sender, RoutedEventArgs e)
         {
+            addFilesDial();
+            
+        }
+
+        private void addFilesDial()
+        {
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
                 System.Windows.Forms.DialogResult result = dialog.ShowDialog();
 
-                data.GetSongs(dialog.SelectedPath);
+                if(dialog.SelectedPath!="")
+                {
+                    data.GetSongs(dialog.SelectedPath);
 
-                listBoxAlbums.Items.Refresh();
-                listBoxSongs.Items.Refresh();
+                    var selected = data.Albums.Cast<Album>().ToArray();
+                    foreach (var album in selected)
+                    {
+                        if(album.Songs.Count<1)
+                        {
+                            data.Albums.Remove(album);
+                        }
+                    }
+
+                    listBoxAlbums.Items.Refresh();
+                    listBoxSongs.Items.Refresh();
+                }
+                
             }
+        }
+
+        private void exit_Click(object sender, RoutedEventArgs e)
+        {
+            writeVar();
+            Application.Current.Shutdown();
+        }
+
+        private void writeVar()
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            // получаем поток, куда будем записывать сериализованный объект
+            using (FileStream fs = new FileStream("data.dat", FileMode.Create))
+            {
+                formatter.Serialize(fs, data);
+            }
+
+        }
+
+        private void readVar()
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            using (FileStream fs = new FileStream("data.dat", FileMode.Open))
+            {
+               data = (ProgramData)formatter.Deserialize(fs);
+
+            }
+
             
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            writeVar();
+        }
+
+        private void deleteAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            Window2 window2 = new Window2();
+            this.Effect = new BlurEffect();
+            this.IsEnabled = false;
+            if (albumsStatus==false)
+            {
+                if (window2.ShowDialog() == true)
+                {
+                    if (window2.DialogResult == true)
+                    {
+                        if (listBoxAlbums.SelectedItem != null)
+                        {
+                            
+                            var selected = listBoxAlbums.SelectedItems.Cast<Album>().ToArray();
+                            foreach (Album temp in selected)
+                            {
+                                foreach(Song var in temp.Songs)
+                                {
+                                    data.Songs.Remove(var);
+                                }
+                                temp.Songs.Clear();
+                                data.Albums.Remove(temp);
+                            }
+
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (window2.ShowDialog() == true)
+                {
+                    if (window2.DialogResult == true)
+                    {
+                        if (listBoxSongs.SelectedItem != null)
+                        {
+                            var selected = listBoxAlbums.SelectedItems.Cast<Song>().ToArray();
+                            foreach (Song temp in selected)
+                            {
+                                if (temp.Album != null)
+                                {
+                                    temp.Album.Songs.Remove(temp);
+                                }
+
+                                if (temp.Album.Songs.Count == 0)
+                                {
+                                    data.Albums.Remove(temp.Album);
+                                    listBoxAlbums.Items.Refresh();
+                                }
+
+                                data.Songs.Remove(temp);
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+
+            listBoxAlbums.Items.Refresh();
+            listBoxPlaylists.Items.Refresh();
+            listBoxSongs.Items.Refresh();
+
+
+            this.IsEnabled = true;
+            this.Effect = null;
+        }
     }
+
 }
